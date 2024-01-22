@@ -48,6 +48,29 @@ class MarkdownFileCreate(APIView):
             return Response(MarkdownFileSerializer(markdownFile).data, status=status.HTTP_200_OK)
         elif i == 2:
             return Response(MarkdownFileSerializer(markdownFile).data, status=status.HTTP_201_CREATED)
+        
+class MarkdownFileEdit(APIView):
+    serializer_class = MarkdownFileSerializer
+
+    def put(self, request, format=None):
+        code = request.data.get('code')
+        markdown_file = get_object_or_404(MarkdownFile, code=code)
+        old_title = markdown_file.title
+
+        serializer = self.serializer_class(markdown_file, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            old_file_path = os.path.join('media', f"{old_title}.md")
+            new_title = request.data.get('title')
+            new_file_path = os.path.join('media', f"{new_title}.md")
+            os.rename(old_file_path, new_file_path)
+            with open(new_file_path, 'w') as file:
+                file.write(request.data.get('content'))
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class MarkdownFileDelete(APIView):
     serializer_class = MarkdownFileSerializer
