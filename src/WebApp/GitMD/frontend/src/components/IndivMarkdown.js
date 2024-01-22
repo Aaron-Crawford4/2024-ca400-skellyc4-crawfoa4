@@ -11,6 +11,7 @@ export default class IndivMarkdown extends Component {
     this.state = {
       markdown: [],
       title: "",
+      code: "",
     };
   }
 
@@ -29,6 +30,7 @@ export default class IndivMarkdown extends Component {
 
   handleDelete = () => {
     const { title } = this.state.markdown;
+    const { code } = this.state.markdown;
 
     fetch("/api/delete", {
       method: "POST",
@@ -36,6 +38,7 @@ export default class IndivMarkdown extends Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        code: code,
         title: title,
       }),
     })
@@ -72,6 +75,14 @@ export default class IndivMarkdown extends Component {
             onClick={this.handleDelete}
           >
             Delete File
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            component={Link}
+            to={`/Edit/${markdown.code}`}
+          >
+            Edit File
           </Button>
       </div>
     );
