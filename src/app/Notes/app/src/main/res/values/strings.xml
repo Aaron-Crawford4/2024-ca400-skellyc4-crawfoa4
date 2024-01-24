@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Notes</string>
+    <string name="my_notes">My Notes</string>
+    <string name="search_notes">Search Notes</string>
+    <string name="note_title">Note Title</string>
+    <string name="type_note_here">Type Note Here...</string>
+    <string name="delete_note_confirmation_message">Are you sure you want to delete this note?</string>
+    <string name="delete_note">delete note</string>
+    <string name="cancel">cancel</string>
+</resources>
