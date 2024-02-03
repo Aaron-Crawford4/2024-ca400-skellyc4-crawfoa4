@@ -1,5 +1,8 @@
 package com.tester.notes.adapters;
 
+import android.annotation.SuppressLint;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +16,23 @@ import com.tester.notes.R;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder>{
 
-    private final List<Note> notes;
+    private List<Note> notes;
+    private final List<Note> notesSource;
     private final NotesListener notesListener;
+    private Timer timer;
 
     public NotesAdapter(List<Note> notes, NotesListener notesListener) {
         this.notes = notes;
         this.notesListener = notesListener;
+        notesSource = notes;
     }
 
     @NonNull
@@ -66,5 +76,30 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             textTitle.setText(note.getTitle());
             textDateTime.setText(note.getDateTime());
         }
+    }
+    public void searchNotes(final String searchTerm){
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void run() {
+                if (searchTerm.trim().isEmpty()){
+                    notes = notesSource;
+                }else {
+                    ArrayList<Note> temp = new ArrayList<>();
+                    for (Note note : notesSource){
+                        if (note.getTitle().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))
+                                || note.getNoteText().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
+                            temp.add(note);
+                        }
+                    }
+                    notes = temp;
+                }
+                new Handler(Looper.getMainLooper()).post(() -> notifyDataSetChanged());
+            }
+        }, 300);
+    }
+    public void cancelTimer(){
+        if (timer != null) timer.cancel();
     }
 }

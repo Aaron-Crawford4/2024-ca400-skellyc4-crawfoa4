@@ -1,10 +1,14 @@
 package com.tester.notes.activities;
 
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +30,7 @@ public class CreateNoteActivity extends AppCompatActivity {
     private TextView textDateTime;
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     private Note existingNote;
+    private AlertDialog deleteNoteDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +56,53 @@ public class CreateNoteActivity extends AppCompatActivity {
             existingNote = (Note) getIntent().getSerializableExtra("note");
             setViewOrUpdateNote();
         }
+        if(existingNote != null){
+            findViewById(R.id.imageDeleteNote).setVisibility(View.VISIBLE);
+            findViewById(R.id.imageDeleteNote).setOnClickListener(view -> createDeleteDialog());
+        }
     }
+
+    private void createDeleteDialog(){
+        if (deleteNoteDialog == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.layout_delete_note,
+                    findViewById(R.id.layoutDeleteNote)
+            );
+            builder.setView(view);
+            deleteNoteDialog = builder.create();
+            if (deleteNoteDialog.getWindow() != null){
+                deleteNoteDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            view.findViewById(R.id.textDeleteNoteConfirm).setOnClickListener(confirmView -> {
+                class DeleteNoteTask implements Runnable {
+                    @Override
+                    public void run() {
+                        NotesDatabase.getDatabase(getApplicationContext())
+                                .noteDao().deleteNote(existingNote);
+
+                        runOnUiThread(() -> {
+                            Intent intent = new Intent();
+                            intent.putExtra("isNoteDeleted", true);
+                            intent.putExtra("isViewOrUpdate", true);
+                            setResult(RESULT_OK, intent);
+
+                            deleteNoteDialog.dismiss();
+                            finish();
+                        });
+                    }
+                }
+                executorService.execute(new DeleteNoteTask());
+            });
+
+            view.findViewById(R.id.textCancel).setOnClickListener(cancelView ->
+                    deleteNoteDialog.dismiss());
+        }
+
+        deleteNoteDialog.show();
+    }
+
     private void setViewOrUpdateNote(){
         inputNoteTitle.setText(existingNote.getTitle());
         inputNoteText.setText(existingNote.getNoteText());

@@ -1,8 +1,12 @@
 package com.tester.notes.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -42,11 +46,11 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
             result -> {
                 if (result.getResultCode() == RESULT_OK) {
                     if (result.getData() != null && result.getData().getBooleanExtra("isViewOrUpdate", false)){
-                        getNotes(RequestType.UPDATE);
+                        getNotes(result.getData().getBooleanExtra("isNoteDeleted", false));
                     }else {
                         getNotes(RequestType.ADD);
                     }
-                    Log.println(Log.INFO, "Activity Result Logging", "Note saved to db successfully");
+                    Log.println(Log.INFO, "Activity Result Logging", "Note changes saved to db successfully");
                 }
             }
     );
@@ -72,6 +76,23 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         notesRecyclerView.setAdapter(notesAdapter);
 
         getNotes(RequestType.VIEW);
+
+        EditText inputSearch = findViewById(R.id.inputSearch);
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                notesAdapter.cancelTimer();
+            }
+
+            @Override
+            public void afterTextChanged(Editable searchTerm) {
+                if (noteList.size() != 0) notesAdapter.searchNotes(searchTerm.toString());
+            }
+        });
     }
 
     @Override
@@ -85,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
 
     private void getNotes(RequestType requestType) {
         class GetNotesTask implements Runnable {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void run() {
                 List<Note> notes = NotesDatabase.getDatabase(getApplicationContext())
@@ -96,9 +118,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
                         notesAdapter.notifyDataSetChanged();
                     }else if (requestType == RequestType.ADD){
                         noteList.add(0, notes.get(0));
-                        notesAdapter.notifyDataSetChanged();
-                        // notesAdapter.notifyItemInserted(0); should be used because it is more
-                        // efficient to use specific change events but it is not working at the moment.
+                        notesAdapter.notifyItemInserted(0);
                         notesRecyclerView.smoothScrollToPosition(0);
                     }else if (requestType == RequestType.UPDATE) {
                         noteList.remove(noteClickedPosition);
@@ -108,6 +128,28 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
                 });
             }
         }
+        executorService.execute(new GetNotesTask());
+    }
+    private void getNotes(Boolean isDeleteNote) {
+        class GetNotesTask implements Runnable {
+            @Override
+            public void run() {
+                List<Note> notes = NotesDatabase.getDatabase(getApplicationContext())
+                        .noteDao().getAllNotes();
+
+                runOnUiThread(() -> {
+                    noteList.remove(noteClickedPosition);
+
+                    if (isDeleteNote){
+                        notesAdapter.notifyItemRemoved(noteClickedPosition);
+                    }else {
+                        noteList.add(noteClickedPosition, notes.get(noteClickedPosition));
+                        notesAdapter.notifyItemChanged(noteClickedPosition);
+                    }
+                });
+            }
+        }
+
         executorService.execute(new GetNotesTask());
     }
 }

@@ -58,6 +58,7 @@
                 app:layout_constraintBottom_toBottomOf="@+id/imageBack"
                 app:layout_constraintEnd_toStartOf="@id/imageDone"
                 app:layout_constraintTop_toTopOf="@+id/imageBack"
+                android:visibility="gone"
                 />
 
             
