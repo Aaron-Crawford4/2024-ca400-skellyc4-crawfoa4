@@ -1,8 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
-import { Link } from "react-router-dom";
+import { Link, useHistory } from 'react-router-dom';
 
 const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const history = useHistory();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Logout successful, update state and redirect to login
+        setIsLoggedIn(false);
+        history.push('/login');
+        console.log('Logout successful');
+      } else {
+        // Handle errors
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Check the user's login status when the component mounts
+    const checkLoginStatus = async () => {
+      try {
+        const response = await fetch('/api/user', {
+          method: 'GET',
+          credentials: 'include', // Include cookies in the request
+        });
+
+        if (response.ok) {
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []); // Run this effect only once when the component mounts
+
   return (
     <header className="header">
       <Typography component="h4" variant="h4" color="inherit">
@@ -14,6 +59,13 @@ const Header = () => {
             Create Markdown File
           </Link>
         </div>
+        {isLoggedIn && (
+          <div className='logout-button'>
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
+          </div>
+        )}
       </Typography>
     </header>
   );
