@@ -28,31 +28,49 @@ class MarkdownFileCreate(APIView):
 
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
-        i = 0
+
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        username = user.name
+
         if serializer.is_valid():
             title = serializer.data.get('title')
             content = serializer.data.get('content')
-            queryset = MarkdownFile.objects.filter(title=title)
-            if queryset.exists():
-                markdownFile = queryset[0]
-                markdownFile.content = content
-                markdownFile.save(update_fields=['content', 'title'])
-                i = 1
-            else:
-                markdownFile = MarkdownFile(title=title, content=content)
-                markdownFile.save()
-                i = 2
+            markdownFile = MarkdownFile(title=title, content=content)
+            markdownFile.save()
+
+        url = "http://localhost:3000/api/v1/user/repos"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        data = {
+            'name' : title,
+        }
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code != 201:
+            print(token)
+            print(response.status_code)
+            print(response.text)
+            return Response({'error': 'Failed to create user repo'}, status=response.status_code)
+
         filename = title + ".md"
-        p = Path('media')
-        p.mkdir(parents=True, exist_ok=True)
-        with (p / filename).open('w') as markdown_file:
-            markdown_file.write(content)
-        if i == 0:
-            return Response({'Bad Request': 'Invalid data...'}, status=status.HTTP_400_BAD_REQUEST)
-        elif i == 1:
-            return Response(MarkdownFileSerializer(markdownFile).data, status=status.HTTP_200_OK)
-        elif i == 2:
-            return Response(MarkdownFileSerializer(markdownFile).data, status=status.HTTP_201_CREATED)
+        url = "http://localhost:3000/api/v1/repos/" + username + "/" + title + "/contents/" + filename
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'token ' + token
+        }
+        data = {
+            'content' : content
+        }
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 201:
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Failed to create user file'}, status=response.status_code)
+
         
 class MarkdownFileEdit(APIView):
     serializer_class = MarkdownFileSerializer
@@ -137,7 +155,8 @@ class Register(APIView):
         }
 
         data = {
-            'name': 'auth_key'
+            'name': 'auth_key',
+            'scopes': ['write:issue', 'write:notification', 'write:repository', 'write:user']
         }
         response = requests.post(url, auth=HTTPBasicAuth(name, password), json=data, headers=headers)
         print("Token = " + response.json().get('sha1'))
@@ -183,13 +202,13 @@ class Login(APIView):
 class UserView(APIView):
 
     def get(self, request):
-        token = request.COOKIES.get('jwt')
+        jwtToken = request.COOKIES.get('jwt')
 
-        if not(token):
+        if not(jwtToken):
             raise AuthenticationFailed('User not authenticated')
         
         try:
-            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+            payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
 
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('User not authenticated')

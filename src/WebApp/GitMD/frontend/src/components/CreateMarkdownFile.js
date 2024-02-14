@@ -32,6 +32,7 @@ export default class CreateMarkdownFile extends Component {
 
     fetch("/api/create", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
