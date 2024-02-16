@@ -17,10 +17,41 @@ from requests.auth import HTTPBasicAuth
 class MarkdownFileView(APIView):
     serializer_class = MarkdownFileSerializer
 
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         markdownFiles = MarkdownFile.objects.all()
-        serializer = self.serializer_class(markdownFiles, many=True)
-        return Response(serializer.data)
+
+        jwtToken = request.COOKIES.get('jwt')
+        switch = request.data["switch"]
+        repoName = request.data["repoName"]
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        name = user.name
+
+        if(switch == "repo"):
+            url = "http://localhost:3000/api/v1/user/repos"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+            data = {
+            }
+            response = requests.get(url, json=data, headers=headers)
+            #print(response.text)
+
+            serializer = self.serializer_class(markdownFiles, many=True)
+
+        else:
+            url = "http://localhost:3000/api/v1/repos/" + name + "/" + repoName + "/contents"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+            data = {
+            }
+            response = requests.get(url, json=data, headers=headers)
+
+        return Response(response.json())
 
 
 class MarkdownFileCreate(APIView):
@@ -36,6 +67,7 @@ class MarkdownFileCreate(APIView):
         username = user.name
 
         if serializer.is_valid():
+            repoTitle = request.data.get('repoTitle')
             title = serializer.data.get('title')
             content = serializer.data.get('content')
             markdownFile = MarkdownFile(title=title, content=content)
@@ -47,17 +79,14 @@ class MarkdownFileCreate(APIView):
             'Authorization': 'Bearer ' + token
         }
         data = {
-            'name' : title,
+            'name' : repoTitle,
         }
         response = requests.post(url, json=data, headers=headers)
-        if response.status_code != 201:
-            print(token)
-            print(response.status_code)
-            print(response.text)
+        if response.status_code != 201: 
             return Response({'error': 'Failed to create user repo'}, status=response.status_code)
 
         filename = title + ".md"
-        url = "http://localhost:3000/api/v1/repos/" + username + "/" + title + "/contents/" + filename
+        url = "http://localhost:3000/api/v1/repos/" + username + "/" + repoTitle + "/contents/" + filename
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'token ' + token
@@ -66,6 +95,7 @@ class MarkdownFileCreate(APIView):
             'content' : content
         }
         response = requests.post(url, json=data, headers=headers)
+        print(response.text)
         if response.status_code == 201:
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
