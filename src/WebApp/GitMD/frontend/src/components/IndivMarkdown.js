@@ -11,17 +11,22 @@ export default class IndivMarkdown extends Component {
     this.state = {
       markdown: [],
       title: "",
-      code: "",
+      sha: "",
     };
   }
 
   componentDidMount() {
-    const { uniqueCode } = this.props.match.params;
+    const { user } = this.props.match.params;
+    const { repo } = this.props.match.params;
+    const { file } = this.props.match.params;
 
-    fetch(`/api/${uniqueCode}`)
+    fetch(`/api/${user}/${repo}/${file}`)
       .then((response) => response.json())
       .then((data) => {
-        this.setState({ markdown: data });
+        this.setState({ 
+          markdown: data,
+          sha: data.sha
+        });
       })
       .catch((error) => {
         console.error("Error fetching markdown content:", error);
@@ -29,8 +34,9 @@ export default class IndivMarkdown extends Component {
   }
 
   handleDelete = () => {
-    const { title } = this.state.markdown;
-    const { code } = this.state.markdown;
+    const { user } = this.props.match.params;
+    const { repo } = this.props.match.params;
+    const { file } = this.props.match.params;
 
     fetch("/api/delete", {
       method: "POST",
@@ -38,8 +44,10 @@ export default class IndivMarkdown extends Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        code: code,
-        title: title,
+        file: file,
+        repo: repo,
+        user: user,
+        sha: this.state.sha,
       }),
     })
       .then((response) => response.json())
@@ -53,17 +61,22 @@ export default class IndivMarkdown extends Component {
 
   render() {
     const { markdown } = this.state;
-
+    const { user } = this.props.match.params;
+    const { repo } = this.props.match.params;
+    const { file } = this.props.match.params;
+    if(markdown.content != undefined)
+      var content = atob(markdown.content);
+      console.log(content)
     return (
       <div className="container">
         <Header />
         <div className="markdown-container">
           <div className="editor-container">
             <Typography component="h4" variant="h4" className="editor-title">
-              {markdown.title}
+              {file.slice(0, -3)}
             </Typography>
             <Typography component="div" variant="body1" className="editor-content">
-              <ReactMarkdown children={markdown.content} />
+              <ReactMarkdown children={content} />
             </Typography>
           </div>
         </div>
@@ -80,7 +93,7 @@ export default class IndivMarkdown extends Component {
             variant="contained"
             color="secondary"
             component={Link}
-            to={`/Edit/${markdown.code}`}
+            to={`/Edit/${user}/${repo}/${file}`}
           >
             Edit File
           </Button>

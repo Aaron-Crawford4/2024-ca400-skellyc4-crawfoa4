@@ -9,10 +9,28 @@ export default class CreateMarkdownFile extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      repoTitle: "",
       title: "",
       content: "",
+      repo: "",
     };
   }
+
+  componentDidMount() {
+    try {
+      const { repo } = this.props.match.params;
+      this.setState({ repo: repo });
+      console.log("here")
+    }
+    catch{
+      console.log("here2")
+    }
+    console.log(this.state.repo)
+  }
+
+  handlerepoTitleChange = (event) => {
+    this.setState({ repoTitle: event.target.value });
+  };
 
   handleTitleChange = (event) => {
     this.setState({ title: event.target.value });
@@ -32,31 +50,44 @@ export default class CreateMarkdownFile extends Component {
 
     fetch("/api/create", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        repoTitle: this.state.repoTitle,
         title: this.state.title,
         content: this.state.content,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("File created successfully:", data);
+        console.log("repo created successfully:", data);
       })
       .catch((error) => {
-        console.error("Error creating file:", error);
+        console.error("Error creating repo:", error);
       });
   };
 
   render() {
+
     return (
       <div>
         <Header />
         <div className="editor-container">
           <Typography component="h4" variant="h4" align="center">
-            Create Markdown File
+            Create A File
           </Typography>
+          {this.state.repo === "" && (
+          <TextField
+            label="Repository Title"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={this.state.repoTitle}
+            onChange={this.handlerepoTitleChange}
+          />
+        )}
           <TextField
             label="Title"
             variant="outlined"

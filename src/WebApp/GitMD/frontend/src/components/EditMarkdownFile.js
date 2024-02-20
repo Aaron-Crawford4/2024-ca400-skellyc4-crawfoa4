@@ -11,20 +11,23 @@ export default class EditMarkdownFile extends Component {
     this.state = {
       title: "",
       content: "",
-      code: "",
+      sha: "",
     };
   }
 
   componentDidMount() {
-    const { uniqueCode } = this.props.match.params;
+    const { user } = this.props.match.params;
+    const { repo } = this.props.match.params;
+    const { file } = this.props.match.params;
+    console.log(user, repo, file)
 
-    fetch(`/api/${uniqueCode}`)
+    fetch(`/api/${user}/${repo}/${file}`)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
-          title: data.title,
-          content: data.content,
-          code: data.code,
+          title: data.name,
+          content: atob(data.content),
+          sha: data.sha
         });
       })
       .catch((error) => {
@@ -41,8 +44,11 @@ export default class EditMarkdownFile extends Component {
   };
 
   handleSubmit = () => {
-    const { title, content, code } = this.state;
-    console.log("Submitting with:", { title, content, code });
+    const { title, content } = this.state;
+    const { user } = this.props.match.params;
+    const { repo } = this.props.match.params;
+    const { file } = this.props.match.params;
+    console.log("Submitting with:", { user, repo, file });
 
     if (!title || !content) {
       console.error("Title and content are required.");
@@ -55,9 +61,11 @@ export default class EditMarkdownFile extends Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        title: this.state.title,
+        user: user,
         content: this.state.content,
-        code: this.state.code,
+        repo: repo,
+        file: file,
+        sha: this.state.sha,
       }),
     })
       .then((response) => response.json())
@@ -82,7 +90,7 @@ export default class EditMarkdownFile extends Component {
             variant="outlined"
             fullWidth
             margin="normal"
-            value={this.state.title}
+            value={this.state.title.slice(0, -3)}
             onChange={this.handleTitleChange}
           />
           <TextField
