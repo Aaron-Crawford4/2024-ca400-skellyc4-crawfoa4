@@ -10,5 +10,5 @@ urlpatterns = [
     path('create', MarkdownFileCreate.as_view(), name='markdown_create'),
     path('delete', MarkdownFileDelete.as_view(), name='markdown_delete'),
     path('edit', MarkdownFileEdit.as_view(), name='markdown_edit'),
-    path('<str:code>', MarkdownFileDetails.as_view(), name='markdown_detail'),
+    path('<str:username>/<str:repo>/<str:file>', MarkdownFileDetails.as_view(), name='markdown_detail'),
 ]

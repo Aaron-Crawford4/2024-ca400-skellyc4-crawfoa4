@@ -11,6 +11,7 @@ from rest_framework.exceptions import AuthenticationFailed
 import jwt, datetime
 import requests
 from requests.auth import HTTPBasicAuth
+import base64
 
 # Create your views here.
 
@@ -70,6 +71,8 @@ class MarkdownFileCreate(APIView):
             repoTitle = request.data.get('repoTitle')
             title = serializer.data.get('title')
             content = serializer.data.get('content')
+            encoded_bytes = base64.b64encode(content.encode('utf-8'))
+            content = encoded_bytes.decode('utf-8')
             markdownFile = MarkdownFile(title=title, content=content)
             markdownFile.save()
 
@@ -106,49 +109,81 @@ class MarkdownFileEdit(APIView):
     serializer_class = MarkdownFileSerializer
 
     def put(self, request, format=None):
-        code = request.data.get('code')
-        markdown_file = get_object_or_404(MarkdownFile, code=code)
-        old_title = markdown_file.title
 
-        serializer = self.serializer_class(markdown_file, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            old_file_path = os.path.join('media', f"{old_title}.md")
-            new_title = request.data.get('title')
-            new_file_path = os.path.join('media', f"{new_title}.md")
-            os.rename(old_file_path, new_file_path)
-            with open(new_file_path, 'w') as file:
-                file.write(request.data.get('content'))
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        user = request.data.get('user')
+        file = request.data.get('file')
+        repo = request.data.get('repo')
+        sha = request.data.get('sha')
+        content = request.data.get('content')
+        encoded_bytes = base64.b64encode(content.encode('utf-8'))
+        content = encoded_bytes.decode('utf-8')
+        url = "http://localhost:3000/api/v1/repos/" + user + "/" + repo + "/contents/" + file
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        data = {
+            'content' : content,
+            'sha' : sha,
+        }
+        response = requests.put(url, json=data, headers=headers)
+        print(response.status_code)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to update user file'}, status=response.status_code)
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response.json(), status=status.HTTP_200_OK)
 
 
 class MarkdownFileDelete(APIView):
     serializer_class = MarkdownFileSerializer
 
     def post(self, request, format=None):
-        title = request.data.get('title')
-        queryset = MarkdownFile.objects.filter(title=title)
-        if queryset.exists():
-            markdownFile = queryset[0]
-            serialized_data = MarkdownFileSerializer(markdownFile).data
-            markdownFile.delete()
-            filename = title + ".md"
-            p = Path('media')
-            p.mkdir(parents=True, exist_ok=True)
-            os.remove(p / filename)
-            return Response(serialized_data, status=status.HTTP_200_OK)
-        return Response({'Bad Request': 'Invalid data or resource not found.'}, status=status.HTTP_400_BAD_REQUEST)
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        user = request.data.get('user')
+        file = request.data.get('file')
+        repo = request.data.get('repo')
+        sha = request.data.get('sha')
+        url = "http://localhost:3000/api/v1/repos/" + user + "/" + repo + "/contents/" + file
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        data = {
+            'sha' : sha,
+        }
+        response = requests.delete(url, json=data, headers=headers)
+        print(response.status_code)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to delete user file'}, status=response.status_code)
+
+        return Response(response.json(), status=status.HTTP_200_OK)
 
 class MarkdownFileDetails(APIView):
     serializer_class = MarkdownFileSerializer
 
-    def get(self, request, code, format=None):
-        markdown_file = get_object_or_404(MarkdownFile, code=code)
-        serializer = self.serializer_class(markdown_file)
-        return Response(serializer.data)
+    def get(self, request, username, repo, file, format=None):
+
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        url = "http://localhost:3000/api/v1/repos/" + username + "/" + repo + "/contents/" + file
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return Response(response.json(), status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Failed to get file content'}, status=response.status_code)
 
 class Register(APIView):
 
