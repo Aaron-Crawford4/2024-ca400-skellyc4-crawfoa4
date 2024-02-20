@@ -19,6 +19,7 @@ export default class HomePage extends Component {
           <Route path="/Login" component={Login} />
           <PrivateRoute exact path="/" component={ViewMarkdownFile} />
           <PrivateRoute path="/Create" component={CreateMarkdownFile} />
+          <PrivateRoute path="/Create/:repo" component={CreateMarkdownFile} />
           <PrivateRoute exact path="/:user/:repo/:file" component={IndivMarkdown} />
           <PrivateRoute path="/Edit/:user/:repo/:file" component={EditMarkdownFile} />
         </Switch>

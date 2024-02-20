@@ -39,6 +39,25 @@ export default class ViewMarkdownFile extends Component {
         });
     }
 
+    DeleteRepo(repoName) {
+        fetch("/api/repoDelete", {
+            method: "POST",
+            credentials: "include",
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({
+                repo: repoName
+            }),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+        })
+        .catch((error) => {
+          console.error("Error fetching repository files:", error);
+        });
+    }
+
     loadRepositories() {
         fetch("/api/view", {
             method: "POST",
@@ -80,6 +99,11 @@ export default class ViewMarkdownFile extends Component {
         this.openModal();
       };
 
+      handleRepoDeleteButtonClick = (repo) => {
+        this.setState({ selectedRepo: repo, repoUrl: repo.full_name });
+        this.DeleteRepo(repo.name);
+      };
+
     render() {
         const { repoUrl } = this.state;
 
@@ -104,6 +128,13 @@ export default class ViewMarkdownFile extends Component {
                                     className="view-button"
                                 >
                                     View Repository
+                                </button>
+                                <br></br>
+                                <button
+                                    onClick={() => this.handleRepoDeleteButtonClick(repo)}
+                                    className="view-button"
+                                >
+                                    Delete Repository
                                 </button>
                             </div>
                         </Grid>
@@ -130,6 +161,7 @@ export default class ViewMarkdownFile extends Component {
                                     </li>
                                 ))}
                             </ul>
+                            <button onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name)}}>Create File</button>
                             <button onClick={this.closeModal}>Close</button>
                         </div>
                     </Modal>

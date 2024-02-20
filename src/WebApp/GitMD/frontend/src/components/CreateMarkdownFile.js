@@ -12,7 +12,20 @@ export default class CreateMarkdownFile extends Component {
       repoTitle: "",
       title: "",
       content: "",
+      repo: "",
     };
+  }
+
+  componentDidMount() {
+    try {
+      const { repo } = this.props.match.params;
+      this.setState({ repo: repo });
+      console.log("here")
+    }
+    catch{
+      console.log("here2")
+    }
+    console.log(this.state.repo)
   }
 
   handlerepoTitleChange = (event) => {
@@ -57,13 +70,15 @@ export default class CreateMarkdownFile extends Component {
   };
 
   render() {
+
     return (
       <div>
         <Header />
         <div className="editor-container">
           <Typography component="h4" variant="h4" align="center">
-            Create Repository
+            Create A File
           </Typography>
+          {this.state.repo === "" && (
           <TextField
             label="Repository Title"
             variant="outlined"
@@ -72,6 +87,7 @@ export default class CreateMarkdownFile extends Component {
             value={this.state.repoTitle}
             onChange={this.handlerepoTitleChange}
           />
+        )}
           <TextField
             label="Title"
             variant="outlined"

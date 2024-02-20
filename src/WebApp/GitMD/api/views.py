@@ -19,7 +19,6 @@ class MarkdownFileView(APIView):
     serializer_class = MarkdownFileSerializer
 
     def post(self, request, format=None):
-        markdownFiles = MarkdownFile.objects.all()
 
         jwtToken = request.COOKIES.get('jwt')
         switch = request.data["switch"]
@@ -39,8 +38,6 @@ class MarkdownFileView(APIView):
             }
             response = requests.get(url, json=data, headers=headers)
             #print(response.text)
-
-            serializer = self.serializer_class(markdownFiles, many=True)
 
         else:
             url = "http://localhost:3000/api/v1/repos/" + name + "/" + repoName + "/contents"
@@ -162,6 +159,29 @@ class MarkdownFileDelete(APIView):
         print(response.status_code)
         if response.status_code != 200: 
             return Response({'error': 'Failed to delete user file'}, status=response.status_code)
+
+        return Response(response.json(), status=status.HTTP_200_OK)
+    
+class RepoDelete(APIView):
+    serializer_class = MarkdownFileSerializer
+
+    def post(self, request, format=None):
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        username = user.name
+        token = user.token
+        repo = request.data.get('repo')
+        url = "http://localhost:3000/api/v1/repos/" + username + "/" + repo
+        headers = {
+            'Authorization': 'Bearer ' + token
+        }
+
+        response = requests.delete(url, headers=headers)
+        print(response.status_code)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to delete user repo'}, status=response.status_code)
 
         return Response(response.json(), status=status.HTTP_200_OK)
 
