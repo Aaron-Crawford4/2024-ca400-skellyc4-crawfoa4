@@ -73,33 +73,35 @@ class MarkdownFileCreate(APIView):
             markdownFile = MarkdownFile(title=title, content=content)
             markdownFile.save()
 
-        url = "http://localhost:3000/api/v1/user/repos"
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-        data = {
-            'name' : repoTitle,
-        }
-        response = requests.post(url, json=data, headers=headers)
-        if response.status_code != 201: 
-            return Response({'error': 'Failed to create user repo'}, status=response.status_code)
+        try:
+            url = "http://localhost:3000/api/v1/user/repos"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+            data = {
+                'name' : repoTitle,
+            }
+            response = requests.post(url, json=data, headers=headers)
+            if response.status_code != 201: 
+                return Response({'error': 'Failed to create user repo'}, status=response.status_code)
 
-        filename = title + ".md"
-        url = "http://localhost:3000/api/v1/repos/" + username + "/" + repoTitle + "/contents/" + filename
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'token ' + token
-        }
-        data = {
-            'content' : content
-        }
-        response = requests.post(url, json=data, headers=headers)
-        print(response.text)
-        if response.status_code == 201:
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'error': 'Failed to create user file'}, status=response.status_code)
+        finally:
+            filename = title + ".md"
+            url = "http://localhost:3000/api/v1/repos/" + username + "/" + repoTitle + "/contents/" + filename
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'token ' + token
+            }
+            data = {
+                'content' : content
+            }
+            response = requests.post(url, json=data, headers=headers)
+            print(response.text)
+            if response.status_code == 201:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error': 'Failed to create user file'}, status=response.status_code)
 
         
 class MarkdownFileEdit(APIView):
@@ -204,6 +206,30 @@ class MarkdownFileDetails(APIView):
             return Response(response.json(), status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Failed to get file content'}, status=response.status_code)
+        
+class AddUserToRepo(APIView):
+
+    def put(self, request, format=None):
+
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        owner = user.name
+        repo = request.data.get('repo')
+        addedUser = request.data.get('addedUser')
+        print("owner " + owner + " repo " + repo + " addedUser " + addedUser)
+        url = "http://localhost:3000/api/v1/repos/" + owner + "/" + repo + "/collaborators/" + addedUser
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.put(url, headers=headers)
+        if response.status_code == 204:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            print(response.text)
+            return Response({'error': 'Failed to add collaborator'}, status=response.status_code)
 
 class Register(APIView):
 
