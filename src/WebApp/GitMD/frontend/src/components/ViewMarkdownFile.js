@@ -14,10 +14,12 @@ export default class ViewMarkdownFile extends Component {
             repositories: [],
             selectedRepo: null,
             repoFiles: [],
+            users: [],
             isModalOpen: false,
             repoUrl: '',
             Collaborator: "",
             repositoryName: "",
+            owner: "",
             HTTPorSSH: "HTTP",
         };
     }
@@ -38,6 +40,27 @@ export default class ViewMarkdownFile extends Component {
         .then((data) => {
           console.log(data)
           this.setState({ repoFiles: data });
+        })
+        .catch((error) => {
+          console.error("Error fetching repository files:", error);
+        });
+    }
+
+    loadUsers(repoName) {
+        fetch("/api/collaborators", {
+            method: "POST",
+            credentials: "include",
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({
+                repoName: repoName
+            }),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data)
+          this.setState({ users: data, owner: data[0] });
         })
         .catch((error) => {
           console.error("Error fetching repository files:", error);
@@ -123,13 +146,14 @@ export default class ViewMarkdownFile extends Component {
     handleRepoButtonClick = (repo) => {
         this.setState({ selectedRepo: repo, repoUrl: repo.full_name, repositoryName: repo.name });
         this.loadRepoFiles(repo.name);
+        this.loadUsers(repo.name);
         this.openModal();
       };
 
     handleRepoDeleteButtonClick = (repo) => {
         this.setState({ selectedRepo: repo, repoUrl: repo.full_name });
         this.DeleteRepo(repo.name);
-        this.props.history.push('/');
+        window.location.reload();
       };
 
     handleCollaboratorChange = (event) => {
@@ -159,19 +183,23 @@ export default class ViewMarkdownFile extends Component {
                                 <Typography component="p" variant="h6" className="repo-title">
                                 {repo.name}
                                 </Typography>
-                                <button
+                                <Button
+                                    className="repo-view-button"
+                                    color="primary"
+                                    variant="contained"
                                     onClick={() => this.handleRepoButtonClick(repo)}
-                                    className="view-button"
                                 >
                                     View Repository    
-                                </button>
+                                </Button>
                                 <br></br>
-                                <button
+                                <Button
+                                    className="repo-delete-button"
+                                    variant="contained"
+                                    color="error"
                                     onClick={() => this.handleRepoDeleteButtonClick(repo)}
-                                    className="view-button"
                                 >
                                     Delete Repository
-                                </button>
+                                </Button>
                             </div>
                         </Grid>
                     ))}
@@ -213,7 +241,6 @@ export default class ViewMarkdownFile extends Component {
                                 readOnly
                                 />
                             </div>
-                            <h3>File List</h3>
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 {this.state.repoFiles.map((file, index) => (
                                     <li key={index}>
@@ -227,22 +254,42 @@ export default class ViewMarkdownFile extends Component {
                                     </li>
                                 ))}
                             </ul>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: '10px', padding: '10px', backgroundColor: '#f2f2f2', borderRadius: '8px', width: '100%', border: '1px solid #ccc'  }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                     <TextField label="Add User To Repository" variant="outlined" rows={1} margin="normal" value={this.state.Collaborator} onChange={this.handleCollaboratorChange} style={{ marginRight: '8px' }} />
                                     <div className="addUser-button">
                                         <Button variant="contained" color="primary" onClick={() => this.addCollaborator(this.state.repositoryName)}>
-                                            Add User
+                                        Add User
                                         </Button>
                                     </div>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name) }} style={{ marginRight: '8px' }}>
                                         Create File
                                     </Button>
                                     <Button variant="contained" color="primary" onClick={this.closeModal}>
                                         Close
                                     </Button>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '10px', backgroundColor: '#f2f2f2', borderRadius: '8px', width: '80%', border: '1px solid #ccc'  }}>
+                                    <Typography variant="h6" gutterBottom>
+                                    Users With Access
+                                    </Typography>
+                                    <ul>
+                                        {this.state.users.slice().map((user, index) => (
+                                            <li key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                            <span>{user}</span>
+                                            {user === this.state.owner && <span style={{ marginLeft: '8px', color: 'blue' }}>(owner)</span>}
+                                            {user !== this.state.owner && (
+                                                <Button variant="contained" color="error" onClick={() => this.removeUser(index)} style={{ marginLeft: '8px' }}>
+                                                Remove
+                                                </Button>
+                                            )}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
                         </div>

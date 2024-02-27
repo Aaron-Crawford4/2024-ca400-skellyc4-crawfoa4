@@ -37,7 +37,6 @@ class MarkdownFileView(APIView):
             data = {
             }
             response = requests.get(url, json=data, headers=headers)
-            #print(response.text)
 
         else:
             url = "http://localhost:3000/api/v1/repos/" + name + "/" + repoName + "/contents"
@@ -48,6 +47,20 @@ class MarkdownFileView(APIView):
             data = {
             }
             response = requests.get(url, json=data, headers=headers)
+
+            if(response.status_code == 200):
+                return Response(response.json())
+            else:
+                owner = GiteaAPIUtils.make_owner_search_request(repoName)
+                print(owner)
+                url = "http://localhost:3000/api/v1/repos/" + owner + "/" + repoName + "/contents"
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+                data = {
+                }
+                response = requests.get(url, json=data, headers=headers)
 
         return Response(response.json())
 
@@ -224,12 +237,37 @@ class AddUserToRepo(APIView):
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
         }
-        response = requests.put(url, headers=headers)
+        data = {
+            'permissions': "admin"
+        }
+        response = requests.put(url, json=data, headers=headers)
         if response.status_code == 204:
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             print(response.text)
             return Response({'error': 'Failed to add collaborator'}, status=response.status_code)
+        
+class GetCollaborators(APIView):
+
+    def post(self, request, format=None):
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        repoName = request.data.get('repoName')
+        owner = GiteaAPIUtils.make_owner_search_request(repoName)
+        url = "http://localhost:3000/api/v1/repos/" + owner + "/" + repoName + "/collaborators"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to get collaborators'}, status=response.status_code)
+
+        collaborators = [user["login"] for user in response.json()]
+        collaborators.insert(0, owner)
+        return Response(collaborators, status=status.HTTP_200_OK)
 
 class Register(APIView):
 
@@ -338,3 +376,14 @@ class Logout(APIView):
             'message' : 'Success'
         }
         return response
+    
+class GiteaAPIUtils:
+    @staticmethod
+    def make_owner_search_request(repoName):
+        url = "http://localhost:3000/api/v1/repos/search?q=" + repoName
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            return response.json()["data"][0]["owner"]["login"]
+        else:
+            return Response({'error': 'Owner of repo not found'}, status=response.status_code)

@@ -4,14 +4,18 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import Header from './Header';
+import ReactMarkdown from "react-markdown";
+import { renderToString } from 'react-dom/server';
 
 export default class CreateMarkdownFile extends Component {
   constructor(props) {
     super(props);
     this.state = {
       repoTitle: "",
+      repoTitleError: "",
       title: "",
       content: "",
+      markdownContent: "",
       repoNameFromParams: "",
     };
   }
@@ -28,7 +32,13 @@ export default class CreateMarkdownFile extends Component {
   }
 
   handlerepoTitleChange = (event) => {
-    this.setState({ repoTitle: event.target.value });
+    const newRepoTitle = event.target.value;
+
+    if (newRepoTitle.includes(' ')) {
+      this.setState({ repoTitleError: "Repository title cannot contain space characters." });
+    } else {
+      this.setState({ repoTitle: newRepoTitle, repoTitleError: "" });
+    }
   };
 
   handleTitleChange = (event) => {
@@ -36,7 +46,10 @@ export default class CreateMarkdownFile extends Component {
   };
 
   handleContentChange = (event) => {
-    this.setState({ content: event.target.value });
+    this.setState({
+      content: event.target.value,
+      markdownContent: event.target.value,
+    });
   };
 
   handleSubmit = () => {
@@ -46,7 +59,11 @@ export default class CreateMarkdownFile extends Component {
       console.error("Title and content are required.");
       return;
     }
-
+    if (this.state.repoTitleError != "") {
+      console.error("Repository title cannot contain space character");
+      return;
+    }
+    console.log("here")
     fetch("/api/create", {
       method: "POST",
       credentials: "include",
@@ -62,6 +79,7 @@ export default class CreateMarkdownFile extends Component {
       .then((response) => response.json())
       .then((data) => {
         console.log("repo created successfully:", data);
+        this.props.history.push('/');
       })
       .catch((error) => {
         console.error("Error creating repo:", error);
@@ -84,31 +102,52 @@ export default class CreateMarkdownFile extends Component {
             margin="normal"
             value={this.state.repoTitle}
             onChange={this.handlerepoTitleChange}
+            error={Boolean(this.state.repoTitleError)}
+            helperText={this.state.repoTitleError}
           />
         )}
           <TextField
-            label="Title"
+            label="First File Title"
             variant="outlined"
             fullWidth
             margin="normal"
             value={this.state.title}
             onChange={this.handleTitleChange}
           />
-          <TextField
-            label="Content"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={10}
-            margin="normal"
-            value={this.state.content}
-            onChange={this.handleContentChange}
-          />
+          <div style={{ display: 'flex', gap: '10x', width: '100%' }}>
+            <TextField
+              label="Content"
+              variant="outlined"
+              multiline
+              fullWidth
+              inputProps={{
+                style: {
+                  fontSize: 16,
+                  fontFamily: 'Arial',
+                  lineHeight: '1.5',
+                },
+              }}
+              rows={30}
+              margin="normal"
+              value={this.state.content}
+              onChange={this.handleContentChange}
+            />
+            <div className="markdown-container">
+            <Typography 
+              label="Markdown Content"
+              variant="outlined"
+              multiline
+              fullWidth
+              rows={30}
+              margin="normal">
+              <ReactMarkdown>{this.state.markdownContent}</ReactMarkdown>
+            </Typography>
+            </div>
+          </div>
           <Button
             variant="contained"
             color="primary"
             component={Link}
-            to="/"
             onClick={this.handleSubmit}
           >
             Create

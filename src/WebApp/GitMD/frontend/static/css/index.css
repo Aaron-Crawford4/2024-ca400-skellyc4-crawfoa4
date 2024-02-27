@@ -5,13 +5,14 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  line-height: 1.5;
 }
 
 #main {
   width: 100%;
   background-color: #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: visible;
 }
 
 #app {
@@ -27,7 +28,6 @@ body {
   padding: 25px;
   text-align: center;
   border-bottom: 1px solid #c4c4c4;
-  width: 96.2%;
   margin-bottom: 30px;
 }
 
@@ -78,8 +78,7 @@ body {
   margin-bottom: 10px;
 }
 
-.view-button {
-  background-color: #007bff;
+.repo-view-button Button{
   color: #fff;
   padding: 12px 24px;
   border: none;
@@ -93,8 +92,26 @@ body {
   text-decoration: none;
 }
   
-.view-button:hover {
+.repo-view-button:hover Button{
   background-color: #0056b3;
+}
+
+.repo-delete-button Button{
+  color: #fff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.5s ease;
+  margin-top: 15px;
+  margin-right: 20px;
+  display: inline-block;
+  text-decoration: none;
+}
+  
+.repo-delete-button:hover Button{
+  background-color: #880000;
 }
 
 .create-button {
@@ -109,6 +126,11 @@ body {
   transition: background-color 0.5s ease;
   display: inline-block;
   text-decoration: none;
+}
+
+.home-button-link {
+  text-decoration: none;
+  color: #000000;
 }
   
 .create-button:hover {
@@ -125,11 +147,6 @@ body {
   align-items: center;
 }
 
-.markdown-container {
-  width: 70%;
-  max-width: 800px;
-  margin-top: 20px;
-}
 
 .editor-container {
   background-color: #f8f8f8;
@@ -137,6 +154,20 @@ body {
   border-radius: 8px;
   padding: 20px;
   margin: 20px;
+}
+
+.markdown-container {
+  font-family: 'Arial', sans-serif;
+  width: 100%;
+  margin-top: 20px;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin: 15px 0px 8px 20px;
+  word-wrap: break-word;
+  overflow: auto;
 }
 
 .editor-title {
@@ -148,9 +179,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   color: #555;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
 }
 
 .logout-button {
@@ -179,10 +208,14 @@ body {
   border-style: solid;
   border-width: 1px;
   border-radius: 5px;
+  margin: 5px;
 }
 
 .fileList-button button{
   width: 100%;
+  background-color: #007bff;
+  color: #fff;
+
 }
 
 .fileList-button:hover {

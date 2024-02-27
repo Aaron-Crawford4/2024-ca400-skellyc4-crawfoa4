@@ -25,7 +25,7 @@ export default class EditMarkdownFile extends Component {
       .then((response) => response.json())
       .then((data) => {
         this.setState({
-          title: data.name,
+          title: data.name.slice(0, -3),
           content: atob(data.content),
           sha: data.sha
         });
@@ -36,6 +36,7 @@ export default class EditMarkdownFile extends Component {
   }
 
   handleTitleChange = (event) => {
+    console.log(event.target.value)
     this.setState({ title: event.target.value });
   };
 
@@ -89,8 +90,10 @@ export default class EditMarkdownFile extends Component {
             label="Title"
             variant="outlined"
             fullWidth
+            multiline
+            rows={1}
             margin="normal"
-            value={this.state.title.slice(0, -3)}
+            value={this.state.title}
             onChange={this.handleTitleChange}
           />
           <TextField
@@ -98,7 +101,7 @@ export default class EditMarkdownFile extends Component {
             variant="outlined"
             fullWidth
             multiline
-            rows={10}
+            rows={40}
             margin="normal"
             value={this.state.content}
             onChange={this.handleContentChange}
