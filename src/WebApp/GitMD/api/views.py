@@ -231,7 +231,10 @@ class AddUserToRepo(APIView):
         owner = user.name
         repo = request.data.get('repo')
         addedUser = request.data.get('addedUser')
-        print("owner " + owner + " repo " + repo + " addedUser " + addedUser)
+        
+        if(addedUser == GiteaAPIUtils.make_owner_search_request(repo)):
+            return Response({'error': 'Collaborator already added'})
+
         url = "http://localhost:3000/api/v1/repos/" + owner + "/" + repo + "/collaborators/" + addedUser
         headers = {
             'Content-Type': 'application/json',
@@ -268,6 +271,29 @@ class GetCollaborators(APIView):
         collaborators = [user["login"] for user in response.json()]
         collaborators.insert(0, owner)
         return Response(collaborators, status=status.HTTP_200_OK)
+    
+class RemoveCollaborator(APIView):
+
+    def post(self, request, format=None):
+        print("-------------------------------")
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        repoName = request.data.get('repoName')
+        collaborator = request.data.get('collaborator')
+        owner = GiteaAPIUtils.make_owner_search_request(repoName)
+        url = "http://localhost:3000/api/v1/repos/" + owner + "/" + repoName + "/collaborators/" + collaborator
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.delete(url, headers=headers)
+        print(response)
+        if response.status_code != 204: 
+            return Response({'error': 'Failed to delete collaborator'}, status=response.status_code)
+
+        return Response(status=status.HTTP_200_OK)
 
 class Register(APIView):
 

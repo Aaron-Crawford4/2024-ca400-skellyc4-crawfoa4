@@ -63,7 +63,28 @@ export default class ViewMarkdownFile extends Component {
           this.setState({ users: data, owner: data[0] });
         })
         .catch((error) => {
-          console.error("Error fetching repository files:", error);
+          console.error("Error loading collaborators:", error);
+        });
+    }
+
+    removeUser(index, repoName) {
+        console.log(this.state.users[index])
+        fetch("/api/removeCollaborator", {
+            method: "POST",
+            credentials: "include",
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({
+                repoName: repoName,
+                collaborator: this.state.users[index],
+            }),
+        })
+        .then((response) => {
+            window.location.reload();
+          })
+        .catch((error) => {
+          console.error("Error removing collaborator", error);
         });
     }
 
@@ -121,8 +142,6 @@ export default class ViewMarkdownFile extends Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                //console.log(data)
-                console.log(typeof data)
                 this.setState({ repositories: data });
             })
             .catch((error) => {
@@ -283,7 +302,7 @@ export default class ViewMarkdownFile extends Component {
                                             <span>{user}</span>
                                             {user === this.state.owner && <span style={{ marginLeft: '8px', color: 'blue' }}>(owner)</span>}
                                             {user !== this.state.owner && (
-                                                <Button variant="contained" color="error" onClick={() => this.removeUser(index)} style={{ marginLeft: '8px' }}>
+                                                <Button variant="contained" color="error" onClick={() => this.removeUser(index, this.state.repositoryName)} style={{ marginLeft: '8px' }}>
                                                 Remove
                                                 </Button>
                                             )}
