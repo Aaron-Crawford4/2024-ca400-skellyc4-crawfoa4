@@ -13,12 +13,10 @@ const Header = () => {
       });
 
       if (response.ok) {
-        // Logout successful, update state and redirect to login
         setIsLoggedIn(false);
         history.push('/login');
         console.log('Logout successful');
       } else {
-        // Handle errors
         console.error('Logout failed');
       }
     } catch (error) {
@@ -27,12 +25,11 @@ const Header = () => {
   };
 
   useEffect(() => {
-    // Check the user's login status when the component mounts
     const checkLoginStatus = async () => {
       try {
         const response = await fetch('/api/user', {
           method: 'GET',
-          credentials: 'include', // Include cookies in the request
+          credentials: 'include',
         });
 
         if (response.ok) {
@@ -46,25 +43,22 @@ const Header = () => {
     };
 
     checkLoginStatus();
-  }, []); // Run this effect only once when the component mounts
-
+  }, []);
   return (
     <header className="header">
       <Typography component="h4" variant="h4" color="inherit">
-        <Link to="/" className="home-button-link">
-          GitMD
-        </Link>
-        <div className='create-button'>
+      <div className='create-button'>
           <Link to="/create" className="create-button-link">
             Create Markdown File
           </Link>
         </div>
+        <Link to="/" className="home-button-link">
+          GitMD
+        </Link>
         {isLoggedIn && (
-          <div className='logout-button'>
-            <button onClick={handleLogout} className="logout-button">
+            <Link onClick={handleLogout} className="logout-button">
               Logout
-            </button>
-          </div>
+            </Link>
         )}
       </Typography>
     </header>
