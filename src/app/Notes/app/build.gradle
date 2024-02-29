@@ -1,11 +1,15 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
     namespace 'com.tester.notes'
     compileSdk 34
-
+    buildFeatures.compose = true
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.9"
+    }
     defaultConfig {
         applicationId "com.tester.notes"
         minSdk 25
@@ -23,8 +27,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     testOptions {
         unitTests {
@@ -38,6 +42,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.compose.ui:ui-android:1.6.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.11.1'
 
@@ -60,5 +66,12 @@ dependencies {
     implementation "com.intuit.sdp:sdp-android:1.1.0"
     implementation 'com.intuit.ssp:ssp-android:1.1.0'
 
+    // Retrofit (for calling django api)
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    // MarkdownView
+    implementation 'com.github.mukeshsolanki:MarkdownView-Android:2.0.0'
+    implementation 'androidx.compose.ui:ui-tooling:1.6.1'
 
 }

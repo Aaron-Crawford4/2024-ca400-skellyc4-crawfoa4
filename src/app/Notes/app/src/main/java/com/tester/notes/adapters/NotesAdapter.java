@@ -74,7 +74,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         }
         void setNote(Note note){
             textTitle.setText(note.getTitle());
-            textDateTime.setText(note.getDateTime());
+            textDateTime.setText(note.getDate_created());
         }
     }
     public void searchNotes(final String searchTerm){
@@ -89,7 +89,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                     ArrayList<Note> temp = new ArrayList<>();
                     for (Note note : notesSource){
                         if (note.getTitle().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))
-                                || note.getNoteText().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
+                                || note.getContent().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
                             temp.add(note);
                         }
                     }

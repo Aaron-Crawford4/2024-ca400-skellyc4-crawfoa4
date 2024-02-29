@@ -1,5 +1,7 @@
 package com.tester.notes.activities;
 
+import static com.tester.notes.utils.Constants.API_BASE_URL;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,24 +10,32 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.tester.notes.R;
 import com.tester.notes.adapters.NotesAdapter;
-import com.tester.notes.database.NotesDatabase;
+import com.tester.notes.dao.NoteDjangoDao;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
+import com.tester.notes.retrofit.RetrofitClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 public class MainActivity extends AppCompatActivity implements NotesListener {
@@ -109,23 +119,40 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void run() {
-                List<Note> notes = NotesDatabase.getDatabase(getApplicationContext())
-                        .noteDao().getAllNotes();
+                List<Note> notes = new ArrayList<>();
+                Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
+                NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                Call<List<Note>> call = client.getAllNotes();
+                call.enqueue(new Callback<List<Note>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<Note>> call, @NonNull Response<List<Note>> response) {
+                        if (response.body() != null) {
+                            notes.addAll(response.body());
+                            Log.i("Got notes", "onResponse: " + notes);
+                            runOnUiThread(() -> {
+                                if (requestType == RequestType.VIEW){
+                                    noteList.addAll(notes);
+                                    notesAdapter.notifyDataSetChanged();
+                                }else if (requestType == RequestType.ADD){
+                                    noteList.add(0, notes.get(notes.size()-1));
+                                    notesAdapter.notifyItemInserted(0);
+                                    notesRecyclerView.smoothScrollToPosition(0);
+                                }else if (requestType == RequestType.UPDATE) {
+                                    noteList.remove(noteClickedPosition);
+                                    noteList.add(noteClickedPosition, notes.get(noteClickedPosition));
+                                    notesAdapter.notifyItemChanged(noteClickedPosition);
+                                }
+                            });
+                        }
+                    }
 
-                runOnUiThread(() -> {
-                    if (requestType == RequestType.VIEW){
-                        noteList.addAll(notes);
-                        notesAdapter.notifyDataSetChanged();
-                    }else if (requestType == RequestType.ADD){
-                        noteList.add(0, notes.get(0));
-                        notesAdapter.notifyItemInserted(0);
-                        notesRecyclerView.smoothScrollToPosition(0);
-                    }else if (requestType == RequestType.UPDATE) {
-                        noteList.remove(noteClickedPosition);
-                        noteList.add(noteClickedPosition, notes.get(noteClickedPosition));
-                        notesAdapter.notifyItemChanged(noteClickedPosition);
+                    @Override
+                    public void onFailure(@NonNull Call<List<Note>> call, @NonNull Throwable t) {
+                        Log.e("Fail", "failed to get notes: ", t);
+                        Toast.makeText(MainActivity.this, "Failed to retrieve notes", Toast.LENGTH_SHORT).show();
                     }
                 });
+
             }
         }
         executorService.execute(new GetNotesTask());
@@ -134,17 +161,32 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         class GetNotesTask implements Runnable {
             @Override
             public void run() {
-                List<Note> notes = NotesDatabase.getDatabase(getApplicationContext())
-                        .noteDao().getAllNotes();
+                List<Note> notes = new ArrayList<>();
+                Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
+                NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                Call<List<Note>> call = client.getAllNotes();
+                call.enqueue(new Callback<List<Note>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<Note>> call, @NonNull Response<List<Note>> response) {
+                        if (response.body() != null) {
+                            notes.addAll(response.body());
+                        }
+                        runOnUiThread(() -> {
+                            noteList.remove(noteClickedPosition);
 
-                runOnUiThread(() -> {
-                    noteList.remove(noteClickedPosition);
+                            if (isDeleteNote){
+                                notesAdapter.notifyItemRemoved(noteClickedPosition);
+                            }else {
+                                noteList.add(noteClickedPosition, notes.get(noteClickedPosition));
+                                notesAdapter.notifyItemChanged(noteClickedPosition);
+                            }
+                        });
+                    }
 
-                    if (isDeleteNote){
-                        notesAdapter.notifyItemRemoved(noteClickedPosition);
-                    }else {
-                        noteList.add(noteClickedPosition, notes.get(noteClickedPosition));
-                        notesAdapter.notifyItemChanged(noteClickedPosition);
+                    @Override
+                    public void onFailure(@NonNull Call<List<Note>> call, @NonNull Throwable t) {
+                        Log.e("Fail", "failed to get notes: ", t);
+                        Toast.makeText(MainActivity.this, "Failed to retrieve notes", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

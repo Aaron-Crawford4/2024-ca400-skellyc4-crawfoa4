@@ -1,30 +1,25 @@
 package com.tester.notes.entities;
 
+
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 
-@Entity(tableName = "notes")
 public class Note implements Serializable {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-
-    @ColumnInfo(name = "title")
+    private String id;
     private String title;
 
-    @ColumnInfo(name = "date_time")
-    private String dateTime;
-    @ColumnInfo(name = "note_text")
-    private String noteText;
+    private String content;
+    private String date_created;
 
-    public int getId() {
+    private String code;
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -36,25 +31,33 @@ public class Note implements Serializable {
         this.title = title;
     }
 
-    public String getDateTime() {
-        return dateTime;
+    public String getContent() {
+        return content;
     }
 
-    public void setDateTime(String dateTime) {
-        this.dateTime = dateTime;
+    public void setContent(String content) {
+        this.content = content;
     }
 
-    public String getNoteText() {
-        return noteText;
+    public String getDate_created() {
+        return date_created;
     }
 
-    public void setNoteText(String noteText) {
-        this.noteText = noteText;
+    public void setDate_created(String date_created) {
+        this.date_created = date_created;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     @NonNull
     @Override
     public String toString() {
-        return title + " : " + dateTime;
+        return title + " : " + date_created;
     }
 }
