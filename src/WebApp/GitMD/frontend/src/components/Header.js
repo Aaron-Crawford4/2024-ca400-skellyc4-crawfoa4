@@ -52,7 +52,7 @@ const Header = () => {
             Create Markdown File
           </Link>
         </div>
-        <Link to="/" className="home-button-link">
+        <Link to="/" className="home-button-link" style={{ marginRight: "110px" }}>
           GitMD
         </Link>
         {isLoggedIn && (

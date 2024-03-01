@@ -25,7 +25,7 @@ body {
 .header {
   background-color: #007bff;
   color: #fff;
-  padding: 25px;
+  padding: 25px 0px 25px 0px;
   text-align: center;
   border-bottom: 1px solid #c4c4c4;
   margin-bottom: 30px;
@@ -119,6 +119,7 @@ body {
   background-color: #ffffff;
   color: #000000;
   padding: 10px 16px;
+  margin-left: 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -159,19 +160,18 @@ body {
 .markdown-container {
   font-family: 'Arial', sans-serif;
   width: 100%;
-  margin-top: 20px;
+  margin: 15px 0px 8px 20px;
   background-color: #f8f8f8;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding-left: 20px;
   padding-right: 20px;
-  margin: 15px 0px 8px 20px;
   word-wrap: break-word;
-  overflow: auto;
 }
 
 .editor-title {
-  font-size: 24px;
+  font-size: 36px;
+  text-align: center;
 }
 
 .editor-content {
@@ -184,6 +184,7 @@ body {
 
 .logout-button {
   float: right;
+  margin-right: 20px;
   background-color: #ffffff;
   color: #000000;
   padding: 10px 16px;
@@ -222,3 +223,14 @@ body {
   transition: background-color 1s ease;
   background-color: #cbcbcb;
 }
+
+.paper-container {
+  width: 210mm;
+  min-height: 297mm ;
+  margin: 5mm auto;
+  min-width: '100%';
+  overflow-wrap: 'break-word';
+  background: #f2f2f2;
+  box-shadow: 0 0 10px rgba(0.1, 0.1, 0.1, 0.1);
+}
+

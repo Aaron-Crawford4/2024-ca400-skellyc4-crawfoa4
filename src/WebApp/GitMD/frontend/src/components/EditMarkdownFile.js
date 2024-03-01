@@ -4,6 +4,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import Header from './Header';
+import ReactMarkdown from "react-markdown";
+import Paper from '@mui/material/Paper';
 
 export default class EditMarkdownFile extends Component {
   constructor(props) {
@@ -11,6 +13,7 @@ export default class EditMarkdownFile extends Component {
     this.state = {
       title: "",
       content: "",
+      markdownContent: "",
       sha: "",
     };
   }
@@ -27,6 +30,7 @@ export default class EditMarkdownFile extends Component {
         this.setState({
           title: data.name.slice(0, -3),
           content: atob(data.content),
+          markdownContent: atob(data.content),
           sha: data.sha
         });
       })
@@ -41,7 +45,7 @@ export default class EditMarkdownFile extends Component {
   };
 
   handleContentChange = (event) => {
-    this.setState({ content: event.target.value });
+    this.setState({ content: event.target.value, markdownContent: event.target.value, });
   };
 
   handleSubmit = () => {
@@ -49,7 +53,6 @@ export default class EditMarkdownFile extends Component {
     const { user } = this.props.match.params;
     const { repo } = this.props.match.params;
     const { file } = this.props.match.params;
-    console.log("Submitting with:", { user, repo, file });
 
     if (!title || !content) {
       console.error("Title and content are required.");
@@ -83,9 +86,20 @@ export default class EditMarkdownFile extends Component {
       <div>
         <Header />
         <div className="editor-container">
-          <Typography component="h4" variant="h4" align="center">
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to="/"
+            onClick={this.handleSubmit}
+            >
+            Save
+          </Button>
+          <Typography component="h4" variant="h4" textAlign={"center"} style={{ marginLeft: '38%' }}>
             Edit Markdown File
           </Typography>
+          </div>
           <TextField
             label="Title"
             variant="outlined"
@@ -96,25 +110,41 @@ export default class EditMarkdownFile extends Component {
             value={this.state.title}
             onChange={this.handleTitleChange}
           />
-          <TextField
-            label="Content"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={40}
-            margin="normal"
-            value={this.state.content}
-            onChange={this.handleContentChange}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            component={Link}
-            to="/"
-            onClick={this.handleSubmit}
-          >
-            Save
-          </Button>
+          <div style={{ display: 'flex', gap: '0x', flexWrap: 'wrap' }}>
+          <Paper elevation={3} className="paper-container">
+            <TextField
+              label="Content"
+              margin="none"
+              multiline
+              fullWidth
+              inputProps={{
+                style: {
+                  fontSize: 16,
+                  fontFamily: 'Arial',
+                  lineHeight: '1.5',
+                  width: '100%',
+                },
+              }}
+              value={this.state.content}
+              onChange={this.handleContentChange}
+            />
+            </Paper>
+            <Paper elevation={3} className="paper-container" style={{ padding: "20px 40px 20px 40px" }}>
+            <Typography 
+              label="Markdown Content"
+              variant="outlined"
+              className="paper-container"
+              multiline
+              fullWidth
+              style={{
+                overflowWrap: 'break-word',
+                maxWidth: '100%',
+              }}
+              margin="normal">
+              <ReactMarkdown>{this.state.markdownContent}</ReactMarkdown>
+            </Typography>
+            </Paper>
+          </div>
         </div>
       </div>
     );

@@ -46,7 +46,7 @@ export default class ViewMarkdownFile extends Component {
         });
     }
 
-    loadUsers(repoName) {
+    loadUsers(repoName, repoFullName) {
         fetch("/api/collaborators", {
             method: "POST",
             credentials: "include",
@@ -54,6 +54,7 @@ export default class ViewMarkdownFile extends Component {
                 "Content-Type": "application/json" 
             },
             body: JSON.stringify({
+                repoFullName: repoFullName,
                 repoName: repoName
             }),
         })
@@ -67,8 +68,7 @@ export default class ViewMarkdownFile extends Component {
         });
     }
 
-    removeUser(index, repoName) {
-        console.log(this.state.users[index])
+    removeUser(index, repoName, repoFullName) {
         fetch("/api/removeCollaborator", {
             method: "POST",
             credentials: "include",
@@ -76,6 +76,7 @@ export default class ViewMarkdownFile extends Component {
                 "Content-Type": "application/json" 
             },
             body: JSON.stringify({
+                repoFullName: repoFullName,
                 repoName: repoName,
                 collaborator: this.state.users[index],
             }),
@@ -107,8 +108,7 @@ export default class ViewMarkdownFile extends Component {
         });
     }
 
-    addCollaborator(repoName) {
-        console.log("here " + repoName)
+    addCollaborator(repoName, repoFullName) {
         fetch("/api/addUserToRepo", {
             method: "PUT",
             credentials: "include",
@@ -116,6 +116,7 @@ export default class ViewMarkdownFile extends Component {
                 "Content-Type": "application/json" 
             },
             body: JSON.stringify({
+                repoFullName: repoFullName,
                 repo: repoName,
                 addedUser: this.state.Collaborator
             }),
@@ -165,7 +166,7 @@ export default class ViewMarkdownFile extends Component {
     handleRepoButtonClick = (repo) => {
         this.setState({ selectedRepo: repo, repoUrl: repo.full_name, repositoryName: repo.name });
         this.loadRepoFiles(repo.name);
-        this.loadUsers(repo.name);
+        this.loadUsers(repo.name, repo.full_name);
         this.openModal();
       };
 
@@ -273,23 +274,23 @@ export default class ViewMarkdownFile extends Component {
                                     </li>
                                 ))}
                             </ul>
+                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center',  margin: '10px 0px 10px 0px', padding: '10px 0px 10px 0px', backgroundColor: '#f2f2f2', borderRadius: '8px', width: '100%', border: '1px solid #ccc' }}>
+                                <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name) }} style={{ marginRight: '8px' }}>
+                                    Create File
+                                </Button>
+                                <Button variant="contained" color="primary" onClick={this.closeModal}>
+                                    Close
+                                </Button>
+                            </div>
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: '10px', padding: '10px', backgroundColor: '#f2f2f2', borderRadius: '8px', width: '100%', border: '1px solid #ccc'  }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                     <TextField label="Add User To Repository" variant="outlined" rows={1} margin="normal" value={this.state.Collaborator} onChange={this.handleCollaboratorChange} style={{ marginRight: '8px' }} />
                                     <div className="addUser-button">
-                                        <Button variant="contained" color="primary" onClick={() => this.addCollaborator(this.state.repositoryName)}>
+                                        <Button variant="contained" color="primary" onClick={() => this.addCollaborator(this.state.repositoryName, this.state.repoUrl)}>
                                         Add User
                                         </Button>
                                     </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name) }} style={{ marginRight: '8px' }}>
-                                        Create File
-                                    </Button>
-                                    <Button variant="contained" color="primary" onClick={this.closeModal}>
-                                        Close
-                                    </Button>
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '10px', backgroundColor: '#f2f2f2', borderRadius: '8px', width: '80%', border: '1px solid #ccc'  }}>
@@ -302,7 +303,7 @@ export default class ViewMarkdownFile extends Component {
                                             <span>{user}</span>
                                             {user === this.state.owner && <span style={{ marginLeft: '8px', color: 'blue' }}>(owner)</span>}
                                             {user !== this.state.owner && (
-                                                <Button variant="contained" color="error" onClick={() => this.removeUser(index, this.state.repositoryName)} style={{ marginLeft: '8px' }}>
+                                                <Button variant="contained" color="error" onClick={() => this.removeUser(index, this.state.repositoryName, this.state.repoUrl)} style={{ marginLeft: '8px' }}>
                                                 Remove
                                                 </Button>
                                             )}

@@ -5,7 +5,9 @@ import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import Header from './Header';
 import ReactMarkdown from "react-markdown";
+import Paper from '@mui/material/Paper';
 import { renderToString } from 'react-dom/server';
+import remarkGfm from 'remark-gfm';
 
 export default class CreateMarkdownFile extends Component {
   constructor(props) {
@@ -89,11 +91,21 @@ export default class CreateMarkdownFile extends Component {
   render() {
     return (
       <div>
-        <Header />
+        <Header/>
         <div className="editor-container">
-          <Typography component="h4" variant="h4" align="center">
-            Create A File
-          </Typography>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              onClick={this.handleSubmit}
+            >
+              Create
+            </Button>
+            <Typography component="h4" variant="h4" textAlign={"center"} style={{ marginLeft: '38%' }}>
+              Create A File
+            </Typography>
+          </div>
           {this.state.repoNameFromParams === undefined && (
           <TextField
             label="Repository Title"
@@ -114,10 +126,11 @@ export default class CreateMarkdownFile extends Component {
             value={this.state.title}
             onChange={this.handleTitleChange}
           />
-          <div style={{ display: 'flex', gap: '10x', width: '100%' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          <Paper elevation={3} className="paper-container">
             <TextField
               label="Content"
-              variant="outlined"
+              margin="none"
               multiline
               fullWidth
               inputProps={{
@@ -127,31 +140,26 @@ export default class CreateMarkdownFile extends Component {
                   lineHeight: '1.5',
                 },
               }}
-              rows={30}
-              margin="normal"
               value={this.state.content}
               onChange={this.handleContentChange}
             />
-            <div className="markdown-container">
+            </Paper>
+            <Paper elevation={3} className="paper-container" >
             <Typography 
               label="Markdown Content"
-              variant="outlined"
               multiline
               fullWidth
-              rows={30}
+              style={{
+                overflowWrap: 'break-word',
+                maxWidth: '100%',
+                paddingLeft: "10px",
+                paddingRight: "10px",
+              }}
               margin="normal">
-              <ReactMarkdown>{this.state.markdownContent}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} children={this.state.markdownContent}></ReactMarkdown>
             </Typography>
-            </div>
+            </Paper>
           </div>
-          <Button
-            variant="contained"
-            color="primary"
-            component={Link}
-            onClick={this.handleSubmit}
-          >
-            Create
-          </Button>
         </div>
       </div>
     );
