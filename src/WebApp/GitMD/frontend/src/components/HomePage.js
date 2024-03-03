@@ -1,25 +1,29 @@
 import React, { Component } from "react";
 import CreateMarkdownFile from "./CreateMarkdownFile";
 import ViewMarkdownFile from "./ViewMarkdownFile";
-import IndivMarkdown from "./IndivMarkdown"
-import EditMarkdownFile from "./EditMarkdownFile"
-import {BrowserRouter as Router, Switch, Route, Link, Redirect} from "react-router-dom"
+import IndivMarkdown from "./IndivMarkdown";
+import EditMarkdownFile from "./EditMarkdownFile";
+import Login from "./Login";
+import PrivateRoute from "./PrivateRoute";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 export default class HomePage extends Component {
-    constructor(props) {
-        super(props);
-    }
+  constructor(props) {
+    super(props);
+  }
 
-    render () {
-        return (
-        <Router> 
-            <Switch>
-                <Route exact path="/" component={ViewMarkdownFile}></Route>
-                <Route path="/Create" component={CreateMarkdownFile}></Route>
-                <Route exact path="/:uniqueCode" component={IndivMarkdown}></Route>
-                <Route path="/Edit/:uniqueCode" component={EditMarkdownFile}></Route>
-            </Switch>
-        </Router>
-        )
-    }
+  render() {
+    return (
+      <Router>
+        <Switch>
+          <Route path="/Login" component={Login} />
+          <PrivateRoute exact path="/" component={ViewMarkdownFile} />
+          <PrivateRoute exact path="/Create" component={CreateMarkdownFile} />
+          <PrivateRoute path="/Create/:repo" component={CreateMarkdownFile} />
+          <PrivateRoute exact path="/:user/:repo/:file" component={IndivMarkdown} />
+          <PrivateRoute path="/Edit/:user/:repo/:file" component={EditMarkdownFile} />
+        </Switch>
+      </Router>
+    );
+  }
 }

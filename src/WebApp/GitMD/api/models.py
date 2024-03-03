@@ -1,6 +1,8 @@
 from django.db import models
 import string
 import random
+from django.contrib.auth.models import AbstractUser
+import uuid
 
 # Create your models here.
 
@@ -20,3 +22,13 @@ class MarkdownFile(models.Model):
 
     def __str__(self):
         return self
+
+class User(AbstractUser):
+    name = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+    username = None
+    token = models.CharField(max_length=255, default="")
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
