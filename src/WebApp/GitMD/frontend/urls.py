@@ -8,4 +8,5 @@ urlpatterns = [
     path('create/<str:repo>', index),
     path('<str:user>/<str:repo>/<str:file>', index),
     path('edit/<str:user>/<str:repo>/<str:file>', index),
+    path('images', index),
 ]

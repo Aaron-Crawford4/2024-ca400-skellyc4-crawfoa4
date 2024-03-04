@@ -108,6 +108,33 @@ class MarkdownFileCreate(APIView):
                 return Response(response.json(), status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': 'Failed to create user file'}, status=response.status_code)
+            
+class ImageUpload(APIView):
+
+    def post(self, request, format=None):
+
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        username = user.name
+        print("-----------------------")
+        image = request.FILES.get('image')
+        print(request.data.get('image'))
+        url = f"{BASE_URL}/repos/" + username + "/images/uploads/"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'token ' + token
+        }
+        data = {
+            'content' : image
+        }
+        response = requests.post(url, json=data, headers=headers)
+        print(response)
+        if response.status_code == 201:
+            return Response(response.json(), status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Failed to upload image file'}, status=response.status_code)
 
         
 class MarkdownFileEdit(APIView):
@@ -382,10 +409,21 @@ class Register(APIView):
         user.token = response.json().get('sha1')
         user.save()
 
-        if response.status_code == 201:
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
+        if response.status_code != 201:
             return Response({'error': 'Failed to create user token'}, status=response.status_code)
+        
+        url = f"{BASE_URL}/user/repos"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + user.token
+        }
+        data = {
+            'name' : "images",
+        }
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code != 201: 
+            return Response({'error': 'Failed to create user images repo'}, status=response.status_code)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class Login(APIView):
     def post(self, request):

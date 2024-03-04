@@ -52,12 +52,17 @@ const Header = () => {
             Create Markdown File
           </Link>
         </div>
-        <Link to="/" className="home-button-link" style={{ marginRight: "110px" }}>
+        <Link to="/" className="home-button-link">
           GitMD
         </Link>
         {isLoggedIn && (
             <Link onClick={handleLogout} className="logout-button">
               Logout
+            </Link>
+        )}
+        {isLoggedIn && (
+            <Link to="/images" className="images-button">
+              Images
             </Link>
         )}
       </Typography>

@@ -196,8 +196,25 @@ body {
   display: inline-block;
   text-decoration: none;
 }
-
 .logout-button:hover {
+  background-color: #cbcbcb;
+}
+
+.images-button {
+  float: right;
+  margin-right: 20px;
+  background-color: #ffffff;
+  color: #000000;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.5s ease;
+  display: inline-block;
+  text-decoration: none;
+}
+.images-button:hover {
   background-color: #cbcbcb;
 }
 

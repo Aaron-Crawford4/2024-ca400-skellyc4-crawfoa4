@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MarkdownFileView, MarkdownFileCreate, MarkdownFileDelete, MarkdownFileDetails, MarkdownFileEdit, Register, Login, Logout, UserView, RepoDelete, AddUserToRepo, GetCollaborators, RemoveCollaborator, GetPreviousVersions
+from .views import MarkdownFileView, MarkdownFileCreate, MarkdownFileDelete, MarkdownFileDetails, MarkdownFileEdit, Register, Login, Logout, UserView, RepoDelete, AddUserToRepo, GetCollaborators, RemoveCollaborator, GetPreviousVersions, ImageUpload
 
 urlpatterns = [
     path('register', Register.as_view(), name='user_register'),
@@ -8,6 +8,7 @@ urlpatterns = [
     path('user', UserView.as_view()),
     path('view', MarkdownFileView.as_view(), name='markdown_view'),
     path('create', MarkdownFileCreate.as_view(), name='markdown_create'),
+    path('image', ImageUpload.as_view(), name='image_upload'),
     path('delete', MarkdownFileDelete.as_view(), name='markdown_delete'),
     path('repoDelete', RepoDelete.as_view(), name='repo_delete'),
     path('addUserToRepo', AddUserToRepo.as_view(), name='Adding_user_to_repo'),

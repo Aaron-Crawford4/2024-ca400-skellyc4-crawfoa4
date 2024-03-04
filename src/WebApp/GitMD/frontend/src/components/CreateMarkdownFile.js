@@ -8,6 +8,8 @@ import ReactMarkdown from "react-markdown";
 import Paper from '@mui/material/Paper';
 import { renderToString } from 'react-dom/server';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw'
+
 
 export default class CreateMarkdownFile extends Component {
   constructor(props) {
@@ -156,7 +158,7 @@ export default class CreateMarkdownFile extends Component {
                 paddingRight: "10px",
               }}
               margin="normal">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} children={this.state.markdownContent}></ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}  children={this.state.markdownContent}></ReactMarkdown>
             </Typography>
             </Paper>
           </div>
