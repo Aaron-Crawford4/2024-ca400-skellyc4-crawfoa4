@@ -27,6 +27,7 @@
     "@mui/icons-material": "^5.15.2",
     "@mui/material": "^5.15.2",
     "react-markdown": "^9.0.1",
+    "react-modal": "^3.16.1",
     "react-router-dom": "^5.2.0"
   }
 }

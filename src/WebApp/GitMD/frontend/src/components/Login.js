@@ -6,7 +6,7 @@ export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: "", // Added name field
+      name: "",
       email: "",
       password: "",
       isAuthenticated: false,
@@ -34,10 +34,8 @@ export default class Login extends Component {
       });
 
       if (response.ok) {
-        // Successful login
         this.setState({ isAuthenticated: true });
       } else {
-        // Handle login failure
         const errorData = await response.json();
         this.setState({ error: errorData.detail });
       }
@@ -60,10 +58,8 @@ export default class Login extends Component {
         body: JSON.stringify({ name, email, password }),
       });
       if (response.ok) {
-        // Registration successful
         console.log("Registration successful");
   
-        // Now, perform the login with the same credentials
         const loginResponse = await fetch("/api/login", {
           method: "POST",
           headers: {
@@ -73,15 +69,12 @@ export default class Login extends Component {
         });
   
         if (loginResponse.ok) {
-          // Successful login
           this.setState({ isAuthenticated: true });
         } else {
-          // Handle login failure
           const loginErrorData = await loginResponse.json();
           this.setState({ error: loginErrorData.detail });
         }
       } else {
-        // Handle registration failure
         console.log("error creating user")
         const errorData = await response.json();
         this.setState({ error: errorData.detail });
@@ -92,10 +85,9 @@ export default class Login extends Component {
   };
 
   toggleRegister = () => {
-    // Toggle between login and registration forms
     this.setState((prevState) => ({
       isRegistering: !prevState.isRegistering,
-      error: null, // Clear any previous errors
+      error: null,
     }));
   };
 

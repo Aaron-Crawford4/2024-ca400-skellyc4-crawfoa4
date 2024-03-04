@@ -60,6 +60,11 @@ const Header = () => {
               Logout
             </Link>
         )}
+        {isLoggedIn && (
+            <Link to="/images" className="images-button">
+              Images
+            </Link>
+        )}
       </Typography>
     </header>
   );
