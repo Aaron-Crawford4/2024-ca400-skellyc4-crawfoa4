@@ -368,10 +368,6 @@ class RemoveCollaborator(APIView):
 class Register(APIView):
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
         name = request.data['name']
         email = request.data['email']
         password = request.data['password']
@@ -390,8 +386,12 @@ class Register(APIView):
             "must_change_password": False
         }
         response = requests.post(url, json=data, headers=headers)
+        print(response)
         if response.status_code != 201:
             return Response({'error': 'Failed to create user'}, status=response.status_code)
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         
         url = f"{BASE_URL}/users/" + name + "/tokens"
 
@@ -438,7 +438,7 @@ class Login(APIView):
         
         payload = {
             'id':user.id,
-            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=120),
             'iat':datetime.datetime.utcnow()
         }
 
@@ -471,7 +471,6 @@ class UserView(APIView):
         
         user = User.objects.filter(id=payload['id']).first()
         serializer = UserSerializer(user)
-
         return Response(serializer.data)
     
 class Logout(APIView):
