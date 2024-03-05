@@ -196,32 +196,31 @@ export default class ViewMarkdownFile extends Component {
                             Your Repositories
                         </Typography>
                     </Grid>
-
                     {this.state.repositories.map((repo, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index} align="center">
-                            <div className="repo-container">
-                                <Typography component="p" variant="h6" className="repo-title">
-                                {repo.name}
-                                </Typography>
-                                <Button
-                                    className="repo-view-button"
-                                    color="primary"
-                                    variant="contained"
-                                    onClick={() => this.handleRepoButtonClick(repo)}
-                                >
-                                    View Repository    
-                                </Button>
-                                <br></br>
-                                <Button
-                                    className="repo-delete-button"
-                                    variant="contained"
-                                    color="error"
-                                    onClick={() => this.handleRepoDeleteButtonClick(repo)}
-                                >
-                                    Delete Repository
-                                </Button>
-                            </div>
-                        </Grid>
+                        <Grid item xs={12} sm={6} md={4} key={index} align="center" >
+                        <div className="repo-container">
+                          <Typography component="p" variant="h6" className="repo-title">
+                            {repo.name}
+                          </Typography>
+                          <Button
+                            className="repo-view-button"
+                            color="primary"
+                            variant="contained"
+                            onClick={() => this.handleRepoButtonClick(repo)}
+                          >
+                            View Repository    
+                          </Button>
+                          <br></br>
+                          <Button
+                            className="repo-delete-button"
+                            variant="contained"
+                            color="error"
+                            onClick={() => this.handleRepoDeleteButtonClick(repo)}
+                          >
+                            Delete Repository
+                          </Button>
+                        </div>
+                      </Grid>
                     ))}
 
                     <Modal
