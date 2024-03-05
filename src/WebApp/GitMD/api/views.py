@@ -1,22 +1,21 @@
 from django.shortcuts import render
-from rest_framework import generics, status
-from .serializers import MarkdownFileSerializer, UserSerializer
-from .models import MarkdownFile, User
+from rest_framework import  status
+from .serializers import UserSerializer
+from .models import  User
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from pathlib import Path
-import os
-from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
 import jwt, datetime
 import requests
 from requests.auth import HTTPBasicAuth
 import base64
+from datetime import datetime as dt
 
-# Create your views here.
+# Create your views here. 
+
+BASE_URL = "http://gitea.gitmd.ie:80/api/v1"
 
 class MarkdownFileView(APIView):
-    serializer_class = MarkdownFileSerializer
 
     def post(self, request, format=None):
 
@@ -29,7 +28,7 @@ class MarkdownFileView(APIView):
         name = user.name
 
         if(switch == "repo"):
-            url = "http://localhost:3000/api/v1/user/repos"
+            url = f"{BASE_URL}/user/repos"
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
@@ -37,10 +36,9 @@ class MarkdownFileView(APIView):
             data = {
             }
             response = requests.get(url, json=data, headers=headers)
-            #print(response.text)
 
         else:
-            url = "http://localhost:3000/api/v1/repos/" + name + "/" + repoName + "/contents"
+            url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/contents"
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
@@ -48,15 +46,27 @@ class MarkdownFileView(APIView):
             data = {
             }
             response = requests.get(url, json=data, headers=headers)
+
+            if(response.status_code == 200):
+                return Response(response.json())
+            else:
+                owner = GiteaAPIUtils.make_owner_search_request(repoName)
+                url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/contents"
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+                data = {
+                }
+                response = requests.get(url, json=data, headers=headers)
 
         return Response(response.json())
 
 
 class MarkdownFileCreate(APIView):
-    serializer_class = MarkdownFileSerializer
 
     def post(self, request, format=None):
-        serializer = self.serializer_class(data=request.data)
+
 
         jwtToken = request.COOKIES.get('jwt')
         payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
@@ -64,17 +74,14 @@ class MarkdownFileCreate(APIView):
         token = user.token
         username = user.name
 
-        if serializer.is_valid():
-            repoTitle = request.data.get('repoTitle')
-            title = serializer.data.get('title')
-            content = serializer.data.get('content')
-            encoded_bytes = base64.b64encode(content.encode('utf-8'))
-            content = encoded_bytes.decode('utf-8')
-            markdownFile = MarkdownFile(title=title, content=content)
-            markdownFile.save()
+        repoTitle = request.data.get('repoTitle')
+        title = request.data.get('title')
+        content = request.data.get('content')
+        encoded_bytes = base64.b64encode(content.encode('utf-8'))
+        content = encoded_bytes.decode('utf-8')
 
         try:
-            url = "http://localhost:3000/api/v1/user/repos"
+            url = f"{BASE_URL}/user/repos"
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
@@ -88,7 +95,7 @@ class MarkdownFileCreate(APIView):
 
         finally:
             filename = title + ".md"
-            url = "http://localhost:3000/api/v1/repos/" + username + "/" + repoTitle + "/contents/" + filename
+            url = f"{BASE_URL}/repos/" + username + "/" + repoTitle + "/contents/" + filename
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'token ' + token
@@ -97,15 +104,40 @@ class MarkdownFileCreate(APIView):
                 'content' : content
             }
             response = requests.post(url, json=data, headers=headers)
-            print(response.text)
             if response.status_code == 201:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(response.json(), status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': 'Failed to create user file'}, status=response.status_code)
+            
+class ImageUpload(APIView):
+
+    def post(self, request, format=None):
+
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        username = user.name
+        print("-----------------------")
+        image = request.FILES.get('image')
+        print(request.data.get('image'))
+        url = f"{BASE_URL}/repos/" + username + "/images/uploads/"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'token ' + token
+        }
+        data = {
+            'content' : image
+        }
+        response = requests.post(url, json=data, headers=headers)
+        print(response)
+        if response.status_code == 201:
+            return Response(response.json(), status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Failed to upload image file'}, status=response.status_code)
 
         
 class MarkdownFileEdit(APIView):
-    serializer_class = MarkdownFileSerializer
 
     def put(self, request, format=None):
 
@@ -118,9 +150,11 @@ class MarkdownFileEdit(APIView):
         repo = request.data.get('repo')
         sha = request.data.get('sha')
         content = request.data.get('content')
+        print("----------------------" + content)
         encoded_bytes = base64.b64encode(content.encode('utf-8'))
         content = encoded_bytes.decode('utf-8')
-        url = "http://localhost:3000/api/v1/repos/" + user + "/" + repo + "/contents/" + file
+        print("----------------------" + content)
+        url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
@@ -130,15 +164,64 @@ class MarkdownFileEdit(APIView):
             'sha' : sha,
         }
         response = requests.put(url, json=data, headers=headers)
-        print(response.status_code)
+        print(response.text)
         if response.status_code != 200: 
             return Response({'error': 'Failed to update user file'}, status=response.status_code)
 
         return Response(response.json(), status=status.HTTP_200_OK)
+    
+class GetPreviousVersions(APIView):
+
+    def post(self, request, format=None):
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        repo = request.data.get('repo')
+        file = request.data.get('file')
+        owner = request.data.get('owner')
+        url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/commits"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to get previous commits'}, status=response.status_code)
+
+        Commitlist = []
+        for commit_data in response.json():
+            if(len(Commitlist) > 2):
+                break
+            else:
+                try:
+                    if(commit_data["files"][0]["filename"] == file):
+                        sha = commit_data["sha"]
+                        author_name = commit_data["commit"]["author"]["name"]
+                        author_date = commit_data["commit"]["author"]["date"]
+                        date_split = dt.strptime(author_date, "%Y-%m-%dT%H:%M:%SZ")
+                        formatted_date = date_split.strftime("%d/%m/%Y")
+                        formatted_time = date_split.strftime("%H:%M:%S")
+
+                        Commitlist.append([sha, author_name, formatted_date, formatted_time])
+                except:
+                    print("No change entry (possible restore)")
+
+        for commit in Commitlist:
+            url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file + "?ref=" + commit[0]
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200: 
+                return Response({'error': 'Failed to get previous commits content'}, status=response.status_code)
+            commit[0] = response.json()["content"]
+
+        return Response(Commitlist, status=status.HTTP_200_OK)
 
 
 class MarkdownFileDelete(APIView):
-    serializer_class = MarkdownFileSerializer
 
     def post(self, request, format=None):
         jwtToken = request.COOKIES.get('jwt')
@@ -149,7 +232,7 @@ class MarkdownFileDelete(APIView):
         file = request.data.get('file')
         repo = request.data.get('repo')
         sha = request.data.get('sha')
-        url = "http://localhost:3000/api/v1/repos/" + user + "/" + repo + "/contents/" + file
+        url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
@@ -165,7 +248,6 @@ class MarkdownFileDelete(APIView):
         return Response(response.json(), status=status.HTTP_200_OK)
     
 class RepoDelete(APIView):
-    serializer_class = MarkdownFileSerializer
 
     def post(self, request, format=None):
         jwtToken = request.COOKIES.get('jwt')
@@ -175,7 +257,7 @@ class RepoDelete(APIView):
         username = user.name
         token = user.token
         repo = request.data.get('repo')
-        url = "http://localhost:3000/api/v1/repos/" + username + "/" + repo
+        url = f"{BASE_URL}/repos/" + username + "/" + repo
         headers = {
             'Authorization': 'Bearer ' + token
         }
@@ -188,7 +270,6 @@ class RepoDelete(APIView):
         return Response(response.json(), status=status.HTTP_200_OK)
 
 class MarkdownFileDetails(APIView):
-    serializer_class = MarkdownFileSerializer
 
     def get(self, request, username, repo, file, format=None):
 
@@ -196,7 +277,7 @@ class MarkdownFileDetails(APIView):
         payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
-        url = "http://localhost:3000/api/v1/repos/" + username + "/" + repo + "/contents/" + file
+        url = f"{BASE_URL}/repos/" + username + "/" + repo + "/contents/" + file
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
@@ -218,31 +299,80 @@ class AddUserToRepo(APIView):
         owner = user.name
         repo = request.data.get('repo')
         addedUser = request.data.get('addedUser')
-        print("owner " + owner + " repo " + repo + " addedUser " + addedUser)
-        url = "http://localhost:3000/api/v1/repos/" + owner + "/" + repo + "/collaborators/" + addedUser
+        repoFullName = request.data.get('repoFullName')
+        
+        if(addedUser == GiteaAPIUtils.make_owner_search_request(repoFullName)):
+            return Response({'error': 'Collaborator is already owner'})
+
+        url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/collaborators/" + addedUser
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
         }
-        response = requests.put(url, headers=headers)
+        data = {
+            'permissions': "admin"
+        }
+        response = requests.put(url, json=data, headers=headers)
         if response.status_code == 204:
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             print(response.text)
             return Response({'error': 'Failed to add collaborator'}, status=response.status_code)
+        
+class GetCollaborators(APIView):
+
+    def post(self, request, format=None):
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        repoName = request.data.get('repoName')
+        repoFullName = request.data.get('repoFullName')
+        owner = GiteaAPIUtils.make_owner_search_request(repoFullName)
+        url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/collaborators"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to get collaborators'}, status=response.status_code)
+
+        collaborators = [user["login"] for user in response.json()]
+        collaborators.insert(0, owner)
+        return Response(collaborators, status=status.HTTP_200_OK)
+    
+class RemoveCollaborator(APIView):
+
+    def post(self, request, format=None):
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        repoName = request.data.get('repoName')
+        repoFullName = request.data.get('repoFullName')
+        collaborator = request.data.get('collaborator')
+        owner = GiteaAPIUtils.make_owner_search_request(repoFullName)
+        url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/collaborators/" + collaborator
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.delete(url, headers=headers)
+        print(response)
+        if response.status_code != 204: 
+            return Response({'error': 'Failed to delete collaborator'}, status=response.status_code)
+
+        return Response(status=status.HTTP_200_OK)
 
 class Register(APIView):
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
         name = request.data['name']
         email = request.data['email']
         password = request.data['password']
 
-        url = 'http://localhost:3000/api/v1/admin/users'
+        url = f"{BASE_URL}/admin/users"
 
         headers = {
             'Content-Type': 'application/json',
@@ -256,10 +386,14 @@ class Register(APIView):
             "must_change_password": False
         }
         response = requests.post(url, json=data, headers=headers)
+        print(response)
         if response.status_code != 201:
             return Response({'error': 'Failed to create user'}, status=response.status_code)
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         
-        url = 'http://localhost:3000/api/v1/users/' + name + '/tokens'
+        url = f"{BASE_URL}/users/" + name + "/tokens"
 
         headers = {
             'Content-Type': 'application/json',
@@ -275,10 +409,21 @@ class Register(APIView):
         user.token = response.json().get('sha1')
         user.save()
 
-        if response.status_code == 201:
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
+        if response.status_code != 201:
             return Response({'error': 'Failed to create user token'}, status=response.status_code)
+        
+        url = f"{BASE_URL}/user/repos"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + user.token
+        }
+        data = {
+            'name' : "images",
+        }
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code != 201: 
+            return Response({'error': 'Failed to create user images repo'}, status=response.status_code)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class Login(APIView):
     def post(self, request):
@@ -293,7 +438,7 @@ class Login(APIView):
         
         payload = {
             'id':user.id,
-            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=120),
             'iat':datetime.datetime.utcnow()
         }
 
@@ -326,7 +471,6 @@ class UserView(APIView):
         
         user = User.objects.filter(id=payload['id']).first()
         serializer = UserSerializer(user)
-
         return Response(serializer.data)
     
 class Logout(APIView):
@@ -338,3 +482,14 @@ class Logout(APIView):
             'message' : 'Success'
         }
         return response
+    
+class GiteaAPIUtils:
+    @staticmethod
+    def make_owner_search_request(repoName):
+        url = f"{BASE_URL}/repos/search?q=" + repoName
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            return response.json()["data"][0]["owner"]["login"]
+        else:
+            return Response({'error': 'Owner of repo not found'}, status=response.status_code)

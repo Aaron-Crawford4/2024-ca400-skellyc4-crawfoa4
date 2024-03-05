@@ -1,12 +1,25 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import Header from './Header';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Link from '@mui/material/Link';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: "", // Added name field
+      name: "",
       email: "",
       password: "",
       isAuthenticated: false,
@@ -34,12 +47,11 @@ export default class Login extends Component {
       });
 
       if (response.ok) {
-        // Successful login
         this.setState({ isAuthenticated: true });
       } else {
-        // Handle login failure
         const errorData = await response.json();
         this.setState({ error: errorData.detail });
+        console.log(this.state.error)
       }
     } catch (error) {
       console.error("Error during login:", error);
@@ -60,10 +72,8 @@ export default class Login extends Component {
         body: JSON.stringify({ name, email, password }),
       });
       if (response.ok) {
-        // Registration successful
         console.log("Registration successful");
   
-        // Now, perform the login with the same credentials
         const loginResponse = await fetch("/api/login", {
           method: "POST",
           headers: {
@@ -73,15 +83,12 @@ export default class Login extends Component {
         });
   
         if (loginResponse.ok) {
-          // Successful login
           this.setState({ isAuthenticated: true });
         } else {
-          // Handle login failure
           const loginErrorData = await loginResponse.json();
           this.setState({ error: loginErrorData.detail });
         }
       } else {
-        // Handle registration failure
         console.log("error creating user")
         const errorData = await response.json();
         this.setState({ error: errorData.detail });
@@ -92,10 +99,9 @@ export default class Login extends Component {
   };
 
   toggleRegister = () => {
-    // Toggle between login and registration forms
     this.setState((prevState) => ({
       isRegistering: !prevState.isRegistering,
-      error: null, // Clear any previous errors
+      error: null,
     }));
   };
 
@@ -107,53 +113,82 @@ export default class Login extends Component {
     }
 
     return (
-      <div>
-        <Header />
-        <h2>{isRegistering ? "Register" : "Login"}</h2>
-        <form onSubmit={isRegistering ? this.handleRegister : this.handleLogin}>
-          {isRegistering && (
-            <label>
-              Name:
-              <input
-                type="text"
-                name="name"
-                value={name}
-                onChange={this.handleInputChange}
-              />
-            </label>
-          )}
-          <br />
-          <label>
-            Email:
-            <input
-              type="text"
-              name="email"
-              value={email}
-              onChange={this.handleInputChange}
-            />
-          </label>
-          <br />
-          <label>
-            Password:
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={this.handleInputChange}
-            />
-          </label>
-          <br />
-          <button type="submit">{isRegistering ? "Register" : "Login"}</button>
-          <button type="button" onClick={this.toggleRegister}>
-            {isRegistering ? "Have an account? Login" : "Don't have an account? Register"}
-          </button>
-          {error && (
-            <div style={{ color: "red" }}>
-              <p>Error: {error}</p>
-            </div>
-          )}
-        </form>
-      </div>
-    );
+          <div>
+          <Header/>
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <Box
+              sx={{
+                marginTop: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Sign in
+              </Typography>
+              <Box component="form" onSubmit={isRegistering ? this.handleRegister : this.handleLogin} noValidate sx={{ mt: 1 }}>
+              {isRegistering && ( <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  type="text"
+                  label="Username"
+                  name="name"
+                  value={name}
+                  onChange={this.handleInputChange}
+                  autoFocus
+                />
+              )}
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  type="text"
+                  label="Email Address"
+                  name="email"
+                  value={email}
+                  onChange={this.handleInputChange}
+                  autoFocus
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  type="password"
+                  label="Password"
+                  name="password"
+                  value={password}
+                  onChange={this.handleInputChange}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  {isRegistering ? "Register" : "Log In"}
+                </Button>
+                <Grid container>
+                  <Grid item>
+                    <Link onClick={this.toggleRegister} variant="body2">
+                    {isRegistering ? "Have an account? Login" : "Don't have an account? Register"}
+                    </Link>
+                  </Grid>
+                </Grid>
+              </Box>
+              {error && (
+                <div style={{ color: "red" }}>
+                  <p>Error: {error}</p>
+                </div>
+              )}
+            </Box>
+          </Container>
+          </div>
+      );
   }
 }
