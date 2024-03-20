@@ -26,7 +26,7 @@ class MarkdownFileView(APIView):
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
         name = user.name
-
+        print(token)
         if(switch == "repo"):
             url = f"{BASE_URL}/user/repos"
             headers = {
@@ -36,8 +36,14 @@ class MarkdownFileView(APIView):
             data = {
             }
             response = requests.get(url, json=data, headers=headers)
+            listOwner = [item for item in response.json() if item['owner']['login'] == name]
+            listShared = [item for item in response.json() if item['owner']['login'] != name]
+            data_to_return = [
+                response.json(), listOwner, listShared
+            ]
+            return Response(data_to_return)
 
-        else:
+        elif(switch == "files"):
             url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/contents"
             headers = {
                 'Content-Type': 'application/json',
@@ -47,11 +53,9 @@ class MarkdownFileView(APIView):
             }
             response = requests.get(url, json=data, headers=headers)
 
-            if(response.status_code == 200):
-                return Response(response.json())
-            else:
-                owner = GiteaAPIUtils.make_owner_search_request(repoName)
-                url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/contents"
+            if(response.status_code != 200):
+                name = GiteaAPIUtils.make_owner_search_request(repoName)
+                url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/contents"
                 headers = {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + token
@@ -60,7 +64,44 @@ class MarkdownFileView(APIView):
                 }
                 response = requests.get(url, json=data, headers=headers)
 
-        return Response(response.json())
+            dates = []
+            for file in response.json():
+                print("file: " + file["name"])
+                url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits?path=" + file["name"]
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+                response2 = requests.get(url, headers=headers)
+                dates.append([file["name"], response2.json()[-1]["created"]])
+            data_to_return = [
+                response.json(), dates
+            ]
+            print(dates)
+            return Response(data_to_return)
+        
+        elif(switch == "deletedFiles"):
+            name = GiteaAPIUtils.make_owner_search_request(repoName)
+            url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+            data = {
+            }
+            response = requests.get(url, json=data, headers=headers)
+            removed_files = []
+            removed_files_with_date = []
+            for d in response.json():
+                date = d["created"]
+                for file in d["files"]:
+                 if file["status"] == "removed":
+                    if file["filename"] not in removed_files:
+                        removed_files_with_date.append([file["filename"], date])
+                        removed_files.append(file["filename"])
+            print(removed_files_with_date)
+            return Response(removed_files_with_date)
+
 
 
 class MarkdownFileCreate(APIView):
@@ -170,6 +211,73 @@ class MarkdownFileEdit(APIView):
 
         return Response(response.json(), status=status.HTTP_200_OK)
     
+class RestoreDeletedFile(APIView):
+
+    def post(self, request, format=None):
+        jwtToken = request.COOKIES.get('jwt')
+        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        token = user.token
+        repo = request.data.get('repoName')
+        file = request.data.get('file')
+        owner = GiteaAPIUtils.make_owner_search_request(repo)
+        url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/commits"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to get previous commits'}, status=response.status_code)
+        
+        i=0
+        for commit_data in response.json():
+            if(i == 1):
+                break
+            else:
+                try:
+                    if(commit_data["files"][0]["filename"] == file):
+                        if(commit_data["files"][0]["status"] == "removed"):
+                            reomvedsha = commit_data["sha"]
+                        if(commit_data["files"][0]["status"] != "removed"):
+                            sha = commit_data["sha"]
+                            i = 1
+
+                except:
+                    print("No change entry")
+        print("--------" + sha)
+
+        url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file + "?ref=" + sha
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to get previous commits content'}, status=response.status_code)
+        content = response.json()["content"]
+
+        url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        data = {
+            'content' : content,
+            'sha' : sha
+        }
+        response = requests.post(url, json=data, headers=headers)
+        print(response.json())
+        new_commit_sha = response.json()['content']['sha']
+        response = requests.patch(f"{BASE_URL}/repos/{owner}/{repo}/git/refs/heads/master",
+                              json={'sha': new_commit_sha}, headers=headers)
+        print("here ----------------- " + reomvedsha + " -_- " + sha + " ______ " + content)
+        print(response)
+        if response.status_code != 200: 
+            return Response({'error': 'Failed to update user file'}, status=response.status_code)
+
+        return Response(response.json(), status=status.HTTP_200_OK)
+    
 class GetPreviousVersions(APIView):
 
     def post(self, request, format=None):
@@ -196,6 +304,8 @@ class GetPreviousVersions(APIView):
             else:
                 try:
                     if(commit_data["files"][0]["filename"] == file):
+                        if(commit_data["files"][0]["status"] == "removed"):
+                            break
                         sha = commit_data["sha"]
                         author_name = commit_data["commit"]["author"]["name"]
                         author_date = commit_data["commit"]["author"]["date"]
@@ -205,7 +315,7 @@ class GetPreviousVersions(APIView):
 
                         Commitlist.append([sha, author_name, formatted_date, formatted_time])
                 except:
-                    print("No change entry (possible restore)")
+                    print("No change entry")
 
         for commit in Commitlist:
             url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file + "?ref=" + commit[0]
@@ -228,10 +338,18 @@ class MarkdownFileDelete(APIView):
         payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
-        user = request.data.get('user')
         file = request.data.get('file')
         repo = request.data.get('repo')
-        sha = request.data.get('sha')
+        user = GiteaAPIUtils.make_owner_search_request(repo)
+
+        url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        sha = response.json()["sha"]
+
         url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
         headers = {
             'Content-Type': 'application/json',
@@ -412,17 +530,6 @@ class Register(APIView):
         if response.status_code != 201:
             return Response({'error': 'Failed to create user token'}, status=response.status_code)
         
-        url = f"{BASE_URL}/user/repos"
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + user.token
-        }
-        data = {
-            'name' : "images",
-        }
-        response = requests.post(url, json=data, headers=headers)
-        if response.status_code != 201: 
-            return Response({'error': 'Failed to create user images repo'}, status=response.status_code)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class Login(APIView):
