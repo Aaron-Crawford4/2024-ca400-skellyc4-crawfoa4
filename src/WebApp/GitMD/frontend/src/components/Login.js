@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
-import Header from './Header';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -114,7 +113,6 @@ export default class Login extends Component {
 
     return (
           <div>
-          <Header/>
           <Container component="main" maxWidth="xs">
             <CssBaseline />
             <Box
@@ -165,6 +163,7 @@ export default class Login extends Component {
                   value={password}
                   onChange={this.handleInputChange}
                 />
+                <p style={{ fontSize: '0.8rem' }}> {isRegistering ? "*Password must be minimum 8 characters" : ""}</p>
                 <Button
                   type="submit"
                   fullWidth

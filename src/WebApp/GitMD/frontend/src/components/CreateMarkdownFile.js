@@ -3,12 +3,12 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-import Header from './Header';
 import ReactMarkdown from "react-markdown";
 import Paper from '@mui/material/Paper';
 import { renderToString } from 'react-dom/server';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw'
+import Box from '@mui/material/Box';
 
 
 export default class CreateMarkdownFile extends Component {
@@ -92,8 +92,7 @@ export default class CreateMarkdownFile extends Component {
 
   render() {
     return (
-      <div>
-        <Header/>
+      <Box component="main" sx={{ flexGrow: 1, p: 8 }}>
         <div className="editor-container">
           <div style={{ display: 'flex', flexDirection: 'row' }}>
             <Button
@@ -128,7 +127,7 @@ export default class CreateMarkdownFile extends Component {
             value={this.state.title}
             onChange={this.handleTitleChange}
           />
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>
           <Paper elevation={3} className="paper-container">
             <TextField
               label="Content"
@@ -163,7 +162,7 @@ export default class CreateMarkdownFile extends Component {
             </Paper>
           </div>
         </div>
-      </div>
+      </Box>
     );
   }
 }
