@@ -275,7 +275,7 @@ export default class ViewMarkdownFile extends Component {
         this.setState({ selectedRepo: repo, repoUrl: repo.full_name, repositoryName: repo.name, RepoOrFile: 1 });
         this.loadRepoFiles(repo.name);
         this.loadUsers(repo.name, repo.full_name);
-        //this.loadDeletedFiles(repo.name);
+        this.loadDeletedFiles(repo.name);
       };
 
     handleRepoDeleteButtonClick = (repo) => {
