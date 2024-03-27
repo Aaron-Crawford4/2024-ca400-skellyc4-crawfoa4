@@ -26,7 +26,6 @@ class MarkdownFileView(APIView):
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
         name = user.name
-        print(token)
         if(switch == "repo"):
             url = f"{BASE_URL}/user/repos"
             headers = {
@@ -66,7 +65,6 @@ class MarkdownFileView(APIView):
 
             dates = []
             for file in response.json():
-                print("file: " + file["name"])
                 url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits?path=" + file["name"]
                 headers = {
                     'Content-Type': 'application/json',
@@ -77,7 +75,6 @@ class MarkdownFileView(APIView):
             data_to_return = [
                 response.json(), dates
             ]
-            print(dates)
             return Response(data_to_return)
         
         elif(switch == "deletedFiles"):
@@ -99,7 +96,6 @@ class MarkdownFileView(APIView):
                     if file["filename"] not in removed_files:
                         removed_files_with_date.append([file["filename"], date])
                         removed_files.append(file["filename"])
-            print(removed_files_with_date)
             return Response(removed_files_with_date)
 
 
@@ -107,7 +103,6 @@ class MarkdownFileView(APIView):
 class MarkdownFileCreate(APIView):
 
     def post(self, request, format=None):
-
 
         jwtToken = request.COOKIES.get('jwt')
         payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
@@ -159,9 +154,7 @@ class ImageUpload(APIView):
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
         username = user.name
-        print("-----------------------")
         image = request.FILES.get('image')
-        print(request.data.get('image'))
         url = f"{BASE_URL}/repos/" + username + "/images/uploads/"
         headers = {
             'Content-Type': 'application/json',
@@ -171,7 +164,6 @@ class ImageUpload(APIView):
             'content' : image
         }
         response = requests.post(url, json=data, headers=headers)
-        print(response)
         if response.status_code == 201:
             return Response(response.json(), status=status.HTTP_201_CREATED)
         else:
@@ -191,10 +183,8 @@ class MarkdownFileEdit(APIView):
         repo = request.data.get('repo')
         sha = request.data.get('sha')
         content = request.data.get('content')
-        print("----------------------" + content)
         encoded_bytes = base64.b64encode(content.encode('utf-8'))
         content = encoded_bytes.decode('utf-8')
-        print("----------------------" + content)
         url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
         headers = {
             'Content-Type': 'application/json',
@@ -205,7 +195,6 @@ class MarkdownFileEdit(APIView):
             'sha' : sha,
         }
         response = requests.put(url, json=data, headers=headers)
-        print(response.text)
         if response.status_code != 200: 
             return Response({'error': 'Failed to update user file'}, status=response.status_code)
 
@@ -245,7 +234,6 @@ class RestoreDeletedFile(APIView):
 
                 except:
                     print("No change entry")
-        print("--------" + sha)
 
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file + "?ref=" + sha
         headers = {
@@ -267,16 +255,11 @@ class RestoreDeletedFile(APIView):
             'sha' : sha
         }
         response = requests.post(url, json=data, headers=headers)
-        print(response.json())
         new_commit_sha = response.json()['content']['sha']
-        response = requests.patch(f"{BASE_URL}/repos/{owner}/{repo}/git/refs/heads/master",
-                              json={'sha': new_commit_sha}, headers=headers)
-        print("here ----------------- " + reomvedsha + " -_- " + sha + " ______ " + content)
-        print(response)
-        if response.status_code != 200: 
-            return Response({'error': 'Failed to update user file'}, status=response.status_code)
+        requests.patch(f"{BASE_URL}/repos/{owner}/{repo}/git/refs/heads/master",
+            json={'sha': new_commit_sha}, headers=headers)
 
-        return Response(response.json(), status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
     
 class GetPreviousVersions(APIView):
 
@@ -418,6 +401,8 @@ class AddUserToRepo(APIView):
         repo = request.data.get('repo')
         addedUser = request.data.get('addedUser')
         repoFullName = request.data.get('repoFullName')
+        # print("fullName " + repoFullName)
+        # print("repo " + repo)
         
         if(addedUser == GiteaAPIUtils.make_owner_search_request(repoFullName)):
             return Response({'error': 'Collaborator is already owner'})
@@ -434,7 +419,6 @@ class AddUserToRepo(APIView):
         if response.status_code == 204:
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
-            print(response.text)
             return Response({'error': 'Failed to add collaborator'}, status=response.status_code)
         
 class GetCollaborators(APIView):
@@ -477,7 +461,6 @@ class RemoveCollaborator(APIView):
             'Authorization': 'Bearer ' + token
         }
         response = requests.delete(url, headers=headers)
-        print(response)
         if response.status_code != 204: 
             return Response({'error': 'Failed to delete collaborator'}, status=response.status_code)
 
@@ -504,7 +487,6 @@ class Register(APIView):
             "must_change_password": False
         }
         response = requests.post(url, json=data, headers=headers)
-        print(response)
         if response.status_code != 201:
             return Response({'error': 'Failed to create user'}, status=response.status_code)
         serializer = UserSerializer(data=request.data)
@@ -558,8 +540,6 @@ class Login(APIView):
             'name' : user.name,
             'email' : user.email
         }
-        print(response)
-        print(response.data)
         return response
     
 class UserView(APIView):
