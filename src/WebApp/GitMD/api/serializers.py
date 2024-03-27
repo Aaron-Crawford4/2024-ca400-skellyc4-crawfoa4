@@ -1,10 +1,5 @@
-from .models import MarkdownFile, User
+from .models import User
 from rest_framework import serializers
-
-class MarkdownFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MarkdownFile
-        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
