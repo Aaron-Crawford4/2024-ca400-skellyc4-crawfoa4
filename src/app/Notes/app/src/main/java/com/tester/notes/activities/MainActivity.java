@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.tester.notes.R;
 import com.tester.notes.adapters.NotesAdapter;
-import com.tester.notes.dao.NoteDjangoDao;
+import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
 import com.tester.notes.retrofit.RetrofitClient;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
     private List<Note> noteList;
     private NotesAdapter notesAdapter;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
     private int noteClickedPosition = -1;
     enum RequestType {
         ADD,
@@ -121,9 +121,9 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
             public void run() {
                 List<Note> notes = new ArrayList<>();
                 Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
-                NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
                 Call<List<Note>> call = client.getAllNotes();
-                call.enqueue(new Callback<List<Note>>() {
+                call.enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<List<Note>> call, @NonNull Response<List<Note>> response) {
                         if (response.body() != null) {
@@ -152,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
                         Toast.makeText(MainActivity.this, "Failed to retrieve notes", Toast.LENGTH_SHORT).show();
                     }
                 });
-
             }
         }
         executorService.execute(new GetNotesTask());
@@ -163,9 +162,9 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
             public void run() {
                 List<Note> notes = new ArrayList<>();
                 Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
-                NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
                 Call<List<Note>> call = client.getAllNotes();
-                call.enqueue(new Callback<List<Note>>() {
+                call.enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<List<Note>> call, @NonNull Response<List<Note>> response) {
                         if (response.body() != null) {

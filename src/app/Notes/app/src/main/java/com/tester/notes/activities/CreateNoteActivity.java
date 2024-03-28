@@ -22,7 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tester.notes.R;
-import com.tester.notes.dao.NoteDjangoDao;
+import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.retrofit.RetrofitClient;
 
@@ -41,7 +41,7 @@ public class CreateNoteActivity extends AppCompatActivity {
 
     private EditText inputNoteTitle, inputNoteText;
     private TextView textDateTime;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
     private Note existingNote;
     private AlertDialog deleteNoteDialog;
 
@@ -115,12 +115,21 @@ public class CreateNoteActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
-                        NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                        NoteApiCalls client = retrofit.create(NoteApiCalls.class);
                         Call<Void> call = client.deleteNote(existingNote);
-                        call.enqueue(new Callback<Void>() {
+                        call.enqueue(new Callback<>() {
                             @Override
                             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                                 Toast.makeText(CreateNoteActivity.this, "Deleted note!", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() -> {
+                                    Intent intent = new Intent();
+                                    intent.putExtra("isNoteDeleted", true);
+                                    intent.putExtra("isViewOrUpdate", true);
+                                    setResult(RESULT_OK, intent);
+
+                                    deleteNoteDialog.dismiss();
+                                    finish();
+                                });
                             }
 
                             @Override
@@ -129,15 +138,6 @@ public class CreateNoteActivity extends AppCompatActivity {
                             }
                         });
 
-                        runOnUiThread(() -> {
-                            Intent intent = new Intent();
-                            intent.putExtra("isNoteDeleted", true);
-                            intent.putExtra("isViewOrUpdate", true);
-                            setResult(RESULT_OK, intent);
-
-                            deleteNoteDialog.dismiss();
-                            finish();
-                        });
                     }
                 }
                 executorService.execute(new DeleteNoteTask());
@@ -173,9 +173,9 @@ public class CreateNoteActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
-                NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
                 Call<Void> call = client.editNote(note);
-                call.enqueue(new Callback<Void>() {
+                call.enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                         Toast.makeText(CreateNoteActivity.this, "Saved note edits!", Toast.LENGTH_SHORT).show();
@@ -199,9 +199,9 @@ public class CreateNoteActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
-                NoteDjangoDao client = retrofit.create(NoteDjangoDao.class);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
                 Call<Void> call = client.createNote(note);
-                call.enqueue(new Callback<Void>() {
+                call.enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                         Toast.makeText(CreateNoteActivity.this, "Created new note!", Toast.LENGTH_SHORT).show();

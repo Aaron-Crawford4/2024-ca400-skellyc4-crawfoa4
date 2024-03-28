@@ -1,4 +1,4 @@
-package com.tester.notes.dao;
+package com.tester.notes.rest;
 
 import com.tester.notes.entities.Note;
 
@@ -11,7 +11,7 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 
 
-public interface NoteDjangoDao {
+public interface NoteApiCalls {
     @GET("/api/view")
     Call<List<Note>> getAllNotes();
 

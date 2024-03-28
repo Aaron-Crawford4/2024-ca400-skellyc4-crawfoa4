@@ -4,7 +4,6 @@ package com.tester.notes.entities;
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
-import java.text.DateFormat;
 
 public class Note implements Serializable {
     private String id;
