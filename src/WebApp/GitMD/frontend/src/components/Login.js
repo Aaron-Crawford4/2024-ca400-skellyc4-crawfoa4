@@ -112,7 +112,7 @@ export default class Login extends Component {
     }
 
     return (
-          <div>
+        <Box component="main" sx={{ flexGrow: 1, p: 8 }}>
           <Container component="main" maxWidth="xs">
             <CssBaseline />
             <Box
@@ -187,7 +187,7 @@ export default class Login extends Component {
               )}
             </Box>
           </Container>
-          </div>
+        </Box>
       );
   }
 }

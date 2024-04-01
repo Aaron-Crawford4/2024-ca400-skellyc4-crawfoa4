@@ -10,6 +10,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import base64
 from datetime import datetime as dt
+from concurrent.futures import ThreadPoolExecutor
 
 # Create your views here. 
 
@@ -64,40 +65,50 @@ class MarkdownFileView(APIView):
                 response = requests.get(url, json=data, headers=headers)
 
             dates = []
-            for file in response.json():
-                url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits?path=" + file["name"]
-                headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-                response2 = requests.get(url, headers=headers)
-                dates.append([file["name"], response2.json()[-1]["created"]])
-            data_to_return = [
-                response.json(), dates
-            ]
-            return Response(data_to_return)
+            print("Current time:", datetime.datetime.now())
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                for data in executor.map(self.get_files, response.json(), [name] * len(name), [repoName] * len(repoName), [token] * len(token)):
+                    dates.append(data)
+            print("Current time:", datetime.datetime.now())
+            return Response(dates)
         
         elif(switch == "deletedFiles"):
             name = GiteaAPIUtils.make_owner_search_request(repoName)
-            url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits"
+            url = f"{BASE_URL}/repos/{name}/{repoName}/commits"
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
             }
-            data = {
-            }
+            data = {}
             response = requests.get(url, json=data, headers=headers)
-            removed_files = []
-            removed_files_with_date = []
-            for d in response.json():
-                date = d["created"]
-                for file in d["files"]:
-                 if file["status"] == "removed":
-                    if file["filename"] not in removed_files:
-                        removed_files_with_date.append([file["filename"], date])
-                        removed_files.append(file["filename"])
-            return Response(removed_files_with_date)
 
+            removed_files_with_date = []
+            removed_files = set()
+            print("hee--------------")
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                for data in executor.map(self.get_deleted_files, response.json(), [removed_files]):
+                    print(data)
+                    removed_files_with_date.append(data)
+                    removed_files.add(data[0])
+
+            return Response(removed_files_with_date)
+        
+    def get_files(self, data, name, repoName, token):
+        print("------------- " + token + name + repoName)
+        headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits?path=" + data["name"]
+        response2 = requests.get(url, headers=headers)
+        print(response2)
+        return [data["name"], response2.json()[-1]["created"]]
+    
+    def get_deleted_files(self, data, removed_files):
+        date = data["created"]
+        for file_data in data["files"]:
+            if file_data["status"] == "removed" and file_data["filename"] not in removed_files:
+                return [file_data["filename"], date]
 
 
 class MarkdownFileCreate(APIView):

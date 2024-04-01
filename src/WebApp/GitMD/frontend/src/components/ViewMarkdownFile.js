@@ -11,12 +11,13 @@ import ListItemButton from '@mui/material/ListItemButton';
 import FolderIcon from '@mui/icons-material/Folder';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ListItemText from '@mui/material/ListItemText';
+import { red } from '@mui/material/colors';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import RestoreIcon from '@mui/icons-material/Restore';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-
+import Switch from '@mui/joy/Switch';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 export default class ViewMarkdownFile extends Component {
     constructor(props) {
@@ -55,7 +56,7 @@ export default class ViewMarkdownFile extends Component {
         })
         .then((response) => response.json())
         .then((data) => {
-          this.setState({ repoFiles: data[0], FileDate: data[1] });
+          this.setState({ FileDate: data });
         })
         .catch((error) => {
           console.error("Error fetching repository files:", error);
@@ -157,7 +158,8 @@ export default class ViewMarkdownFile extends Component {
             }),
         })
         .then((response) => response.json())
-        .then((data) => {
+        .then(() => {
+            window.location.reload();
         })
         .catch((error) => {
           console.error("Error fetching repository files:", error);
@@ -181,6 +183,9 @@ export default class ViewMarkdownFile extends Component {
           .then((data) => {
             console.log("File deleted successfully:", data);
           })
+          .then(() => {
+            window.location.reload();
+        })
           .catch((error) => {
             console.error("Error deleting file:", error);
           });
@@ -288,13 +293,18 @@ export default class ViewMarkdownFile extends Component {
         this.setState({ Collaborator: event.target.value });
       };
 
-    handleHTTPorSSHChange = (type) => {
-        this.setState({ HTTPorSSH: type });
+    handleHTTPorSSHChange = () => {
+        this.setState(prevState => ({
+            HTTPorSSH: prevState.HTTPorSSH === "HTTP" ? "SSH" : "HTTP"
+        }));
       };
 
-    ShowDeletedFiles = (num) => {
-        this.setState({ showDeletedFiles: num });
-      };
+    ShowDeletedFiles = () => {
+        console.log(this.state.showDeletedFiles)
+        this.setState(prevState => ({
+          showDeletedFiles: prevState.showDeletedFiles === 0 ? 1 : 0
+        }));
+    };
 
     render() {
         const { repoUrl } = this.state;
@@ -351,16 +361,16 @@ export default class ViewMarkdownFile extends Component {
                         </>
                         <>
                         {this.state.sortBy != "dateOldestFirst" && (
-                            <Button onClick={() => this.handleSort("dateOldestFirst")}>
-                                <div style={{ marginRight: '70px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
+                            <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateOldestFirst")}>
+                                <div style={{ marginRight: '0px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
                                 <ArrowDropDownIcon />
                             </Button>
                         )}
                         </>
                         <>
                         {this.state.sortBy == "dateOldestFirst" && (
-                            <Button onClick={() => this.handleSort("dateNewestFirst")}>
-                                <div style={{ marginRight: '70px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
+                            <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateNewestFirst")}>
+                                <div style={{ marginRight: '0px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
                                 <ArrowDropUpIcon />
                             </Button>
                         )}
@@ -390,43 +400,30 @@ export default class ViewMarkdownFile extends Component {
                     )}
                     {this.state.RepoOrFile === 1 && (
                         <div style={{ textAlign: 'center' }}>
-                            <h1>{this.state.selectedRepo && this.state.selectedRepo.name}</h1>
+                            <Typography component="h4" variant="h4">Collection: {this.state.selectedRepo && this.state.selectedRepo.name}</Typography>
                             <div style={{ display: "flex", alignItems: "center" }}>
-                                <Button
-                                variant="contained"
-                                style={{ marginRight: "8px" }}
-                                onClick={() => this.handleHTTPorSSHChange("HTTP")}
-                                >
-                                HTTP
-                                </Button>
-                                <Button
-                                variant="contained"
-                                style={{ marginRight: "8px" }}
-                                onClick={() => this.handleHTTPorSSHChange("SSH")}
-                                >
-                                SSH
-                                </Button>
-                                <TextField
-                                label="Connection Type"
-                                variant="outlined"
-                                fullWidth
-                                margin="normal"
-                                value={this.state.HTTPorSSH}
-                                readOnly
-                                />
-                                <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name) }} style={{ marginLeft: '8px' }}>
-                                    New File
-                                </Button>
-                                {this.state.showDeletedFiles === 0 && (
-                                <Button variant="contained" color="primary" onClick={() => { this.ShowDeletedFiles(1) }} style={{ marginLeft: '8px' }}>
-                                    Deleted Files
-                                </Button>
-                                )}
-                                {this.state.showDeletedFiles === 1 && (
-                                <Button variant="contained" color="primary" onClick={() => { this.ShowDeletedFiles(0) }} style={{ marginLeft: '8px' }}>
-                                    Files
-                                </Button>
-                                )}
+                                <div style={{ display: "flex", alignItems: "center", marginRight: '8px' }}>
+                                    <Typography style={{ marginRight: '8px' }}>HTTP</Typography>
+                                    <Switch size="lg" color={this.state.showDeletedFiles ? 'primary' : 'primary'} onClick={this.handleHTTPorSSHChange}  checked={this.state.HTTPorSSH === "SSH"} inputProps={{ 'aria-label': 'controlled' }}/>
+                                    <Typography style={{ marginLeft: '8px', marginRight: '8px' }}>SSH</Typography>
+                                    <TextField
+                                        label="Connection Type"
+                                        variant="outlined"
+                                        style={{ width: '32vw', marginLeft: '8px' }}
+                                        margin="normal"
+                                        value={this.state.HTTPorSSH}
+                                        readOnly
+                                    />
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center"}}>
+                                    <Typography style={{ marginLeft: '8px', marginRight: '8px' }}>Files</Typography>
+                                    <Switch size="lg" color={this.state.showDeletedFiles ? 'primary' : 'primary'} onClick={this.ShowDeletedFiles}  checked={this.state.showDeletedFiles === 1} inputProps={{ 'aria-label': 'controlled' }}/>
+                                    <Typography style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}>Deleted Files</Typography>
+                                    <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name) }} style={{ marginLeft: '28px' }}>
+                                        New File
+                                    <AddBoxIcon style={{ marginLeft: '8px' }}></AddBoxIcon>
+                                    </Button>
+                                </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                             <>
@@ -447,16 +444,16 @@ export default class ViewMarkdownFile extends Component {
                             </>
                             <>
                             {this.state.sortBy != "dateOldestFirst" && (
-                                <Button onClick={() => this.handleSort("dateOldestFirst")}>
-                                    <div style={{ marginRight: '70px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
+                                <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateOldestFirst")}>
+                                    <div style={{ marginRight: '0px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
                                     <ArrowDropDownIcon />
                                 </Button>
                             )}
                             </>
                             <>
                             {this.state.sortBy == "dateOldestFirst" && (
-                                <Button onClick={() => this.handleSort("dateNewestFirst")}>
-                                    <div style={{ marginRight: '70px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
+                                <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateNewestFirst")}>
+                                    <div style={{ marginRight: '0px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
                                     <ArrowDropUpIcon />
                                 </Button>
                             )}
@@ -534,7 +531,7 @@ export default class ViewMarkdownFile extends Component {
                                             {user === this.state.owner && <span style={{ marginLeft: '8px', color: 'blue' }}>(owner)</span>}
                                             {user !== this.state.owner && (
                                                 <ListItemButton variant="contained" color="error" onClick={() => this.removeUser(index, this.state.repositoryName, this.state.repoUrl)} style={{ marginLeft: '8px' }}>
-                                                <PersonRemoveIcon />
+                                                <PersonRemoveIcon sx={{ color: red[700] }}/>
                                                 </ListItemButton>
                                             )}
                                             </li>
