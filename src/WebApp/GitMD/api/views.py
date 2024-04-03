@@ -10,7 +10,15 @@ import requests
 from requests.auth import HTTPBasicAuth
 import base64
 from datetime import datetime as dt
+from django.contrib.auth import authenticate
 from concurrent.futures import ThreadPoolExecutor
+from django.core.mail import send_mail, EmailMessage
+from GitMD.settings import EMAIL_HOST_USER
+import random
+import string
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 # Create your views here. 
 
@@ -54,7 +62,7 @@ class MarkdownFileView(APIView):
             response = requests.get(url, json=data, headers=headers)
 
             if(response.status_code != 200):
-                name = GiteaAPIUtils.make_owner_search_request(repoName)
+                name = GiteaAPIUtils.make_owner_search_request(repoName, token)
                 url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/contents"
                 headers = {
                     'Content-Type': 'application/json',
@@ -73,35 +81,37 @@ class MarkdownFileView(APIView):
             return Response(dates)
         
         elif(switch == "deletedFiles"):
-            name = GiteaAPIUtils.make_owner_search_request(repoName)
-            url = f"{BASE_URL}/repos/{name}/{repoName}/commits"
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            }
-            data = {}
-            response = requests.get(url, json=data, headers=headers)
+            try:
+                name = GiteaAPIUtils.make_owner_search_request(repoName, token)
+                url = f"{BASE_URL}/repos/{name}/{repoName}/commits"
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+                data = {}
+                response = requests.get(url, json=data, headers=headers)
 
-            removed_files_with_date = []
-            removed_files = set()
-            print("hee--------------")
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                for data in executor.map(self.get_deleted_files, response.json(), [removed_files]):
-                    print(data)
-                    removed_files_with_date.append(data)
-                    removed_files.add(data[0])
+                removed_files_with_date = []
+                removed_files = set()
+                print("hee--------------")
+                with ThreadPoolExecutor(max_workers=5) as executor:
+                    for data in executor.map(self.get_deleted_files, response.json(), [removed_files]):
+                        print(data)
+                        removed_files_with_date.append(data)
+                        removed_files.add(data[0])
 
-            return Response(removed_files_with_date)
+                return Response(removed_files_with_date)
+            except:
+                return Response([[]])
         
     def get_files(self, data, name, repoName, token):
-        print("------------- " + token + name + repoName)
         headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
             }
         url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits?path=" + data["name"]
         response2 = requests.get(url, headers=headers)
-        print(response2)
+        print(data["name"])
         return [data["name"], response2.json()[-1]["created"]]
     
     def get_deleted_files(self, data, removed_files):
@@ -135,6 +145,7 @@ class MarkdownFileCreate(APIView):
             }
             data = {
                 'name' : repoTitle,
+                'private': True
             }
             response = requests.post(url, json=data, headers=headers)
             if response.status_code != 201: 
@@ -156,30 +167,6 @@ class MarkdownFileCreate(APIView):
             else:
                 return Response({'error': 'Failed to create user file'}, status=response.status_code)
             
-class ImageUpload(APIView):
-
-    def post(self, request, format=None):
-
-        jwtToken = request.COOKIES.get('jwt')
-        payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
-        user = User.objects.filter(id=payload['id']).first()
-        token = user.token
-        username = user.name
-        image = request.FILES.get('image')
-        url = f"{BASE_URL}/repos/" + username + "/images/uploads/"
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'token ' + token
-        }
-        data = {
-            'content' : image
-        }
-        response = requests.post(url, json=data, headers=headers)
-        if response.status_code == 201:
-            return Response(response.json(), status=status.HTTP_201_CREATED)
-        else:
-            return Response({'error': 'Failed to upload image file'}, status=response.status_code)
-
         
 class MarkdownFileEdit(APIView):
 
@@ -220,7 +207,7 @@ class RestoreDeletedFile(APIView):
         token = user.token
         repo = request.data.get('repoName')
         file = request.data.get('file')
-        owner = GiteaAPIUtils.make_owner_search_request(repo)
+        owner = GiteaAPIUtils.make_owner_search_request(repo, token)
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/commits"
         headers = {
             'Content-Type': 'application/json',
@@ -237,8 +224,6 @@ class RestoreDeletedFile(APIView):
             else:
                 try:
                     if(commit_data["files"][0]["filename"] == file):
-                        if(commit_data["files"][0]["status"] == "removed"):
-                            reomvedsha = commit_data["sha"]
                         if(commit_data["files"][0]["status"] != "removed"):
                             sha = commit_data["sha"]
                             i = 1
@@ -325,6 +310,7 @@ class GetPreviousVersions(APIView):
         return Response(Commitlist, status=status.HTTP_200_OK)
 
 
+
 class MarkdownFileDelete(APIView):
 
     def post(self, request, format=None):
@@ -334,7 +320,7 @@ class MarkdownFileDelete(APIView):
         token = user.token
         file = request.data.get('file')
         repo = request.data.get('repo')
-        user = GiteaAPIUtils.make_owner_search_request(repo)
+        user = GiteaAPIUtils.make_owner_search_request(repo, token)
 
         url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
         headers = {
@@ -415,7 +401,7 @@ class AddUserToRepo(APIView):
         # print("fullName " + repoFullName)
         # print("repo " + repo)
         
-        if(addedUser == GiteaAPIUtils.make_owner_search_request(repoFullName)):
+        if(addedUser == GiteaAPIUtils.make_owner_search_request(repoFullName, token)):
             return Response({'error': 'Collaborator is already owner'})
 
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/collaborators/" + addedUser
@@ -441,7 +427,7 @@ class GetCollaborators(APIView):
         token = user.token
         repoName = request.data.get('repoName')
         repoFullName = request.data.get('repoFullName')
-        owner = GiteaAPIUtils.make_owner_search_request(repoFullName)
+        owner = GiteaAPIUtils.make_owner_search_request(repoFullName, token)
         url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/collaborators"
         headers = {
             'Content-Type': 'application/json',
@@ -465,7 +451,7 @@ class RemoveCollaborator(APIView):
         repoName = request.data.get('repoName')
         repoFullName = request.data.get('repoFullName')
         collaborator = request.data.get('collaborator')
-        owner = GiteaAPIUtils.make_owner_search_request(repoFullName)
+        owner = GiteaAPIUtils.make_owner_search_request(repoFullName, token)
         url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/collaborators/" + collaborator
         headers = {
             'Content-Type': 'application/json',
@@ -581,11 +567,76 @@ class Logout(APIView):
         }
         return response
     
+class PasswordReset(APIView):
+
+    def put(self, request, format=None):
+        print("----------------------------------")
+
+        email = request.data['email']
+        print(email)
+        user = User.objects.filter(email=email).first()
+        type = request.data['type']
+        response = Response()
+        if(type == "reset"):
+            resetToken = request.data['resetToken']
+            print("user " + user.resetToken + " entered " + resetToken)
+            if(resetToken != user.resetToken):
+
+                response.data = {
+                'message' : 'Incorrect Reset Token'
+                }
+                return response
+            else:
+                newPassword = request.data['newPassword']
+                print(email, newPassword)
+                user.set_password(newPassword) 
+                user.save()
+                response = Response()
+                response.data = {
+                    'message' : 'Success'
+                }
+                return response
+        else:
+            characters = string.ascii_letters + string.digits
+            resetToken = ''.join(random.choice(characters) for _ in range(16))
+            user.resetToken = resetToken
+            print("user reset token set to " + user.resetToken)
+            subject = "Password Reset"
+            messageHTML = f"""
+                <html>
+                <head></head>
+                <body>
+                    <p>Hi {user.name},</p>
+                    <p>Your token for resetting your password is: <strong>{user.resetToken}</strong></p>
+                    <p>Use this token on our site to reset your password</p>
+                </body>
+                </html>
+                """
+            messagePlain = (
+                f"Hi {user.name},\n\n"
+                f"Your token for resetting your password is: {user.resetToken}\n\n"
+                "Use this token on our site to reset your password"
+            )
+            recipient = [email]
+            email = EmailMultiAlternatives(subject, messagePlain, EMAIL_HOST_USER, recipient)
+            email.attach_alternative(messageHTML, "text/html")
+            email.send()
+            user.save()
+            response.data = {
+                'message' : 'Success'
+            }
+            return response
+             
+    
 class GiteaAPIUtils:
     @staticmethod
-    def make_owner_search_request(repoName):
+    def make_owner_search_request(repoName, token):
         url = f"{BASE_URL}/repos/search?q=" + repoName
-        response = requests.get(url)
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
             return response.json()["data"][0]["owner"]["login"]

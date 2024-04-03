@@ -4,7 +4,7 @@ import ViewMarkdownFile from "./ViewMarkdownFile";
 import IndivMarkdown from "./IndivMarkdown";
 import EditMarkdownFile from "./EditMarkdownFile";
 import Login from "./Login";
-import ImageView from "./ImageView";
+import HelpView from "./HelpView";
 import PrivateRoute from "./PrivateRoute";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Header from './Header';
@@ -22,8 +22,8 @@ export default class HomePage extends Component {
         <Header />
         <Switch>
           <Route path="/login" component={Login} />
+          <Route exact path="/help" component={HelpView} />
           <PrivateRoute exact path="/create" component={CreateMarkdownFile} />
-          <PrivateRoute exact path="/images" component={ImageView} />
           <PrivateRoute exact path="/" component={ViewMarkdownFile} />
           <PrivateRoute exact path="/:view" component={ViewMarkdownFile} />
           <PrivateRoute path="/create/:repo" component={CreateMarkdownFile} />

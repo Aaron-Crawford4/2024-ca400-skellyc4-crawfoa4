@@ -18,6 +18,8 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import Switch from '@mui/joy/Switch';
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import SearchIcon from '@mui/icons-material/Search';
+import InputAdornment from '@mui/material/InputAdornment';
 
 export default class ViewMarkdownFile extends Component {
     constructor(props) {
@@ -39,6 +41,7 @@ export default class ViewMarkdownFile extends Component {
             showDeletedFiles: 0,
             deletedFiles: [],
             sortBy: 'alphabetically',
+            searchTerm: '',
         };
     }
 
@@ -298,6 +301,11 @@ export default class ViewMarkdownFile extends Component {
             HTTPorSSH: prevState.HTTPorSSH === "HTTP" ? "SSH" : "HTTP"
         }));
       };
+    
+    handleSearchChange = (event) => {
+        const newSearch = event.target.value;
+        this.setState({ searchTerm: newSearch });
+    };
 
     ShowDeletedFiles = () => {
         console.log(this.state.showDeletedFiles)
@@ -338,11 +346,11 @@ export default class ViewMarkdownFile extends Component {
                     {this.state.RepoOrFile === 0 && (
                     <>
                         <Grid item xs={12} align="center">
-                        <Typography component="h4" variant="h4">
+                        <Typography style={{ marginRight: '90px', marginBottom: '25px' }} component="h4" variant="h4">
                             Collections
                         </Typography>
                         </Grid>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '2px' }}>
                         <>
                         {this.state.sortBy != "alphabeticallyReverse" && (
                             <Button onClick={() => this.handleSort("alphabeticallyReverse")}>
@@ -359,6 +367,19 @@ export default class ViewMarkdownFile extends Component {
                             </Button>
                         )}
                         </>
+                        <TextField
+                            id="search"
+                            value={this.state.searchTerm}
+                            onChange={this.handleSearchChange}
+                            InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                <SearchIcon />
+                                </InputAdornment>
+                            ),
+                            }}
+                            variant="standard"
+                        />
                         <>
                         {this.state.sortBy != "dateOldestFirst" && (
                             <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateOldestFirst")}>
@@ -377,25 +398,31 @@ export default class ViewMarkdownFile extends Component {
                         </>
                         </div>
                         <Divider />
-                        {repoArray.map((repo, index) => (
-                        <Grid item xs={12} key={index}>
-                            <div className="repo-container" onClick={() => this.handleRepoButtonClick(repo)}>
-                            <ListItemButton component="p" variant="h6" className="repo-title">
-                                <ListItemIcon>
-                                <FolderIcon />
-                                </ListItemIcon>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                    <div>{repo.name}</div>
-                                    <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${repo.created_at.substring(8, 10)}-${repo.created_at.substring(5, 7)}-${repo.created_at.substring(0, 4)}`}</div>
-                                    </div>
-                            </ListItemButton>
-                            <ListItemButton style={{ float: 'right' }} onClick={() => this.handleRepoDeleteButtonClick(repo)}>
-                                <DeleteIcon className="repo-delete-button" />
-                            </ListItemButton>
-                            </div>
-                            <Divider />
-                        </Grid>
-                        ))}
+                        {repoArray.map((repo, index) => {
+                            if (repo.name.includes(this.state.searchTerm)) {
+                                return (
+                                    <Grid item xs={12} key={index}>
+                                        <div className="repo-container" onClick={() => this.handleRepoButtonClick(repo)}>
+                                            <ListItemButton component="p" variant="h6" className="repo-title">
+                                                <ListItemIcon>
+                                                    <FolderIcon />
+                                                </ListItemIcon>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                                    <div>{repo.name}</div>
+                                                    <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${repo.created_at.substring(8, 10)}-${repo.created_at.substring(5, 7)}-${repo.created_at.substring(0, 4)}`}</div>
+                                                </div>
+                                            </ListItemButton>
+                                            <ListItemButton style={{ float: 'right' }} onClick={() => this.handleRepoDeleteButtonClick(repo)}>
+                                                <DeleteIcon className="repo-delete-button" />
+                                            </ListItemButton>
+                                        </div>
+                                        <Divider />
+                                    </Grid>
+                                );
+                            } else {
+                                return null;
+                            }
+                        })}
                     </>
                     )}
                     {this.state.RepoOrFile === 1 && (
@@ -425,7 +452,7 @@ export default class ViewMarkdownFile extends Component {
                                     </Button>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '2px', marginTop: '20px' }}>
                             <>
                             {this.state.sortBy != "alphabeticallyReverse" && (
                                 <Button onClick={() => this.handleSort("alphabeticallyReverse")}>
@@ -442,6 +469,19 @@ export default class ViewMarkdownFile extends Component {
                                 </Button>
                             )}
                             </>
+                            <TextField
+                                id="search"
+                                value={this.state.searchTerm}
+                                onChange={this.handleSearchChange}
+                                InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                    <SearchIcon />
+                                    </InputAdornment>
+                                ),
+                                }}
+                                variant="standard"
+                            />
                             <>
                             {this.state.sortBy != "dateOldestFirst" && (
                                 <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateOldestFirst")}>
@@ -462,50 +502,63 @@ export default class ViewMarkdownFile extends Component {
                             <Divider />
                             {this.state.showDeletedFiles === 0 && (
                                 <>
-                                {fileArray.map((file, index) => (
-                                    <Grid item xs={12} key={index}>
-                                        <div className="repo-container">
-                                        <ListItemButton component="p" variant="h6" className="repo-title" onClick={() => window.open(repoUrl + '/' + file[0], '_blank')}>
-                                            <ListItemIcon>
-                                            <InsertDriveFileIcon />
-                                            </ListItemIcon>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                            <div>{file[0]}</div>
-                                            <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${file[1].substring(8, 10)}-${file[1].substring(5, 7)}-${file[1].substring(0, 4)}`}</div>
-                                            </div>
-                                        </ListItemButton>
-                                        <ListItemButton style={{ float: 'right' }} onClick={() => this.handleDeleteFile(file[0])}>
-                                            <DeleteIcon className="repo-delete-button" />
-                                        </ListItemButton>
-                                        </div>
-                                        <Divider />
-                                    </Grid>
-                                ))}
+                                {fileArray.map((file, index) => {
+                                    if(file[0].includes(this.state.searchTerm)) {
+                                        return (
+                                            <Grid item xs={12} key={index}>
+                                                <div className="repo-container">
+                                                <ListItemButton component="p" variant="h6" className="repo-title" onClick={() => window.open(repoUrl + '/' + file[0], '_blank')}>
+                                                    <ListItemIcon>
+                                                    <InsertDriveFileIcon />
+                                                    </ListItemIcon>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                                    <div>{file[0]}</div>
+                                                    <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${file[1].substring(8, 10)}-${file[1].substring(5, 7)}-${file[1].substring(0, 4)}`}</div>
+                                                    </div>
+                                                </ListItemButton>
+                                                <ListItemButton style={{ float: 'right' }} onClick={() => this.handleDeleteFile(file[0])}>
+                                                    <DeleteIcon className="repo-delete-button" />
+                                                </ListItemButton>
+                                                </div>
+                                                <Divider />
+                                            </Grid>
+                                    )}
+                                    else {
+                                        return null;
+                                    }
+                                })}
                                 </>
                             )}
                             {this.state.showDeletedFiles === 1 && (
                                 <>
                                 {deletedFileArray
                                 .filter(file => !this.state.FileDate.some(innerList => innerList[0] === file[0]))
-                                .map((file, index) => (
-                                    <Grid item xs={12} key={index}>
-                                        <div className="repo-container">
-                                        <ListItemButton component="p" variant="h6" className="repo-title" onClick={() => window.open(repoUrl + '/' + file[0], '_blank')}>
-                                            <ListItemIcon>
-                                            <InsertDriveFileIcon />
-                                            </ListItemIcon>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                            <div>{file[0]}</div>
-                                            <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${file[1].substring(8, 10)}-${file[1].substring(5, 7)}-${file[1].substring(0, 4)}`}</div>
-                                            </div>
-                                        </ListItemButton>
-                                        <ListItemButton style={{ float: 'right' }} onClick={() => this.restoreDeletedFile(file[0])}>
-                                            <RestoreIcon className="repo-delete-button" />
-                                        </ListItemButton>
-                                        </div>
-                                        <Divider />
-                                    </Grid>
-                                ))}
+                                .map((file, index) => {
+                                    if(file[0].includes(this.state.searchTerm)) {
+                                        return (
+                                            <Grid item xs={12} key={index}>
+                                                <div className="repo-container">
+                                                <ListItemButton component="p" variant="h6" className="repo-title" onClick={() => window.open(repoUrl + '/' + file[0], '_blank')}>
+                                                    <ListItemIcon>
+                                                    <InsertDriveFileIcon />
+                                                    </ListItemIcon>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                                    <div>{file[0]}</div>
+                                                    <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${file[1].substring(8, 10)}-${file[1].substring(5, 7)}-${file[1].substring(0, 4)}`}</div>
+                                                    </div>
+                                                </ListItemButton>
+                                                <ListItemButton style={{ float: 'right' }} onClick={() => this.restoreDeletedFile(file[0])}>
+                                                    <RestoreIcon className="repo-delete-button" />
+                                                </ListItemButton>
+                                                </div>
+                                                <Divider />
+                                            </Grid>
+                                        )
+                                    }
+                                    else {
+                                        return null;
+                                    }
+                                })}
                                 </>
                             )}
 

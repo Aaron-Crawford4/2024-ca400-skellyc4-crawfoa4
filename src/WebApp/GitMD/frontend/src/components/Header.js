@@ -22,7 +22,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
-
 const drawerWidth = 240;
 
 const Header = () => {
@@ -47,14 +46,6 @@ const Header = () => {
     } catch (error) {
       console.error('Error during logout:', error);
     }
-  };
-
-  const handleAvatarClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleAvatarClose = () => {
-    setAnchorEl(null);
   };
 
   const getLinkForIndex = (index) => {
@@ -164,7 +155,7 @@ const Header = () => {
                 <ListItemIcon>
                   {index % 2 === 0 ? <LogoutIcon /> : <HelpIcon />}
                 </ListItemIcon>
-                <ListItemText primary={text} />
+                <ListItemText primary={index === 1 ? 'Help' : isLoggedIn ? 'Sign Out' : 'Sign In'} />
               </ListItemButton>
             </ListItem>
           ))}
