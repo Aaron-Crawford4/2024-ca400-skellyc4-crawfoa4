@@ -267,6 +267,7 @@ class GetPreviousVersions(APIView):
         repo = request.data.get('repo')
         file = request.data.get('file')
         owner = request.data.get('owner')
+        print(file)
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/commits"
         headers = {
             'Content-Type': 'application/json',
@@ -275,7 +276,7 @@ class GetPreviousVersions(APIView):
         response = requests.get(url, headers=headers)
         if response.status_code != 200: 
             return Response({'error': 'Failed to get previous commits'}, status=response.status_code)
-
+        print(response)
         Commitlist = []
         for commit_data in response.json():
             if(len(Commitlist) > 2):
@@ -288,14 +289,18 @@ class GetPreviousVersions(APIView):
                         sha = commit_data["sha"]
                         author_name = commit_data["commit"]["author"]["name"]
                         author_date = commit_data["commit"]["author"]["date"]
-                        date_split = dt.strptime(author_date, "%Y-%m-%dT%H:%M:%SZ")
+                        if("+" in author_date):
+                            author_date = author_date.split("+")[0]
+                        print(author_date)
+                        date_split = dt.strptime(author_date, "%Y-%m-%dT%H:%M:%S")
+                        print("here")
                         formatted_date = date_split.strftime("%d/%m/%Y")
                         formatted_time = date_split.strftime("%H:%M:%S")
 
                         Commitlist.append([sha, author_name, formatted_date, formatted_time])
                 except:
                     print("No change entry")
-
+        print(Commitlist)
         for commit in Commitlist:
             url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file + "?ref=" + commit[0]
             headers = {
