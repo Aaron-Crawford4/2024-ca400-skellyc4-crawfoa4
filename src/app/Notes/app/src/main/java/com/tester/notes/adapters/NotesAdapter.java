@@ -16,6 +16,8 @@ import com.tester.notes.R;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -73,8 +75,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             layoutNote = itemView.findViewById(R.id.layoutNote);
         }
         void setNote(Note note){
-            textTitle.setText(note.getTitle());
-            textDateTime.setText(note.getDate_created());
+            textTitle.setText(note.getName());
+            OffsetDateTime dateTime = OffsetDateTime.parse(note.getDateCreated());
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault());
+            textDateTime.setText(dateTime.format(formatter));
         }
     }
     public void searchNotes(final String searchTerm){
@@ -88,8 +93,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 }else {
                     ArrayList<Note> temp = new ArrayList<>();
                     for (Note note : notesSource){
-                        if (note.getTitle().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))
-                                || note.getContent().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
+                        if (note.getName().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
                             temp.add(note);
                         }
                     }

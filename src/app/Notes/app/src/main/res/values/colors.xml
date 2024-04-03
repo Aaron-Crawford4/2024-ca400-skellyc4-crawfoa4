@@ -10,5 +10,5 @@
     <color name="colorDefaultNoteColor">#333333</color>
     <color name="colorNoteDateTimeText">#FAFAFA</color>
     <color name="colorDelete">#FF4842</color>
-    <color name="colorSearchBackground">#333333</color>
+    <color name="colorSearchBackground">#3A3A3A</color>
 </resources>

@@ -61,10 +61,9 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
                         runOnUiThread(() -> {
-                            Toast.makeText(LoginActivity.this, "login success", Toast.LENGTH_SHORT).show();
                             User user = response.body();
-                            if (user != null) {
-                                Log.i("Test Logging", user.getJwt());
+                            if (user != null && response.isSuccessful()) {
+                                Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
                                 Auth.setAuthToken(user.getJwt());
                                 Intent intent = new Intent(getApplicationContext(), CollectionsActivity.class);
                                 intent.putExtra("user", user);

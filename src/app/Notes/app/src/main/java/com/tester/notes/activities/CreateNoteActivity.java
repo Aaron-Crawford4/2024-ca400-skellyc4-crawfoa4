@@ -22,11 +22,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tester.notes.R;
+import com.tester.notes.entities.NoteContent;
+import com.tester.notes.entities.Repository;
 import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.retrofit.RetrofitClient;
 
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +48,9 @@ public class CreateNoteActivity extends AppCompatActivity {
     private TextView textDateTime;
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
     private Note existingNote;
+    private String noteSha;
     private AlertDialog deleteNoteDialog;
+    private Repository repo;
 
     private final ActivityResultLauncher<Intent> previewNoteLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -58,6 +65,9 @@ public class CreateNoteActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
+
+        Intent previousIntent = getIntent();
+        repo = (Repository) previousIntent.getSerializableExtra("repo");
 
         ImageView imageBack = findViewById(R.id.imageBack);
         imageBack.setOnClickListener(view -> {
@@ -88,8 +98,8 @@ public class CreateNoteActivity extends AppCompatActivity {
         });
 
         if(getIntent().getBooleanExtra("isViewOrUpdate", false)){
-            existingNote = (Note) getIntent().getSerializableExtra("note");
-            setViewOrUpdateNote();
+            existingNote = (Note) previousIntent.getSerializableExtra("note");
+            getNoteContent();
         }
         if(existingNote != null){
             findViewById(R.id.imageDeleteNote).setVisibility(View.VISIBLE);
@@ -114,9 +124,9 @@ public class CreateNoteActivity extends AppCompatActivity {
                 class DeleteNoteTask implements Runnable {
                     @Override
                     public void run() {
-                        Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
+                        Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
                         NoteApiCalls client = retrofit.create(NoteApiCalls.class);
-                        Call<Void> call = client.deleteNote(existingNote);
+                        Call<Void> call = client.deleteNote(existingNote.getName(), repo.getName());
                         call.enqueue(new Callback<>() {
                             @Override
                             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
@@ -150,10 +160,38 @@ public class CreateNoteActivity extends AppCompatActivity {
         deleteNoteDialog.show();
     }
 
-    private void setViewOrUpdateNote(){
-        inputNoteTitle.setText(existingNote.getTitle());
-        inputNoteText.setText(existingNote.getContent());
-        textDateTime.setText(existingNote.getDate_created());
+    private void getNoteContent(){
+        inputNoteTitle.setText(existingNote.getName());
+
+        OffsetDateTime dateTime = OffsetDateTime.parse(existingNote.getDateCreated());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault());
+        textDateTime.setText(dateTime.format(formatter));
+
+        class GetNoteContentTask implements Runnable{
+            @Override
+            public void run() {
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
+                Call<NoteContent> call = client.getNoteContent(repo.getOwner().getUsername(), repo.getName(), existingNote.getName());
+                call.enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull Call<NoteContent> call, @NonNull Response<NoteContent> response) {
+                        if (response.isSuccessful() && response.body()!= null){
+                            noteSha = response.body().getSha();
+                            byte[] decodedBytes = Base64.getDecoder().decode(response.body().getContent());
+                            String decodedText = new String(decodedBytes);
+                            inputNoteText.setText(decodedText);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<NoteContent> call, @NonNull Throwable t) {
+                        Log.e("Request Error", "Failed GetNoteContentTask", t);
+                    }
+                });
+            }
+        }
+        executorService.execute(new GetNoteContentTask());
     }
     private void saveNote(){
         if (inputNoteTitle.getText().toString().isEmpty()){
@@ -164,17 +202,15 @@ public class CreateNoteActivity extends AppCompatActivity {
             return;
         }
 
-        final Note note = new Note();
-        note.setTitle(inputNoteTitle.getText().toString());
-        note.setContent(inputNoteText.getText().toString());
-        note.setDate_created(textDateTime.getText().toString());
+        final Note note = new Note(inputNoteTitle.getText().toString(), textDateTime.getText().toString()) ;
+        String content = inputNoteText.getText().toString();
 
         class SaveNoteTask implements Runnable {
             @Override
             public void run() {
-                Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
                 NoteApiCalls client = retrofit.create(NoteApiCalls.class);
-                Call<Void> call = client.editNote(note);
+                Call<Void> call = client.editNote(repo.getOwner().getUsername(), existingNote.getName(), repo.getName(), noteSha, content);
                 call.enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
@@ -198,9 +234,9 @@ public class CreateNoteActivity extends AppCompatActivity {
         class CreateNoteTask implements Runnable {
             @Override
             public void run() {
-                Retrofit retrofit = RetrofitClient.getClient(API_BASE_URL);
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
                 NoteApiCalls client = retrofit.create(NoteApiCalls.class);
-                Call<Void> call = client.createNote(note);
+                Call<Void> call = client.createNote(repo.getName(), note.getName(), content);
                 call.enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
@@ -221,7 +257,6 @@ public class CreateNoteActivity extends AppCompatActivity {
             }
         }
         if (existingNote != null){
-            note.setCode(existingNote.getCode());
             executorService.execute(new SaveNoteTask());
         } else executorService.execute(new CreateNoteTask());
     }
