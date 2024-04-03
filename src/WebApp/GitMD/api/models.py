@@ -9,7 +9,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=255)
     username = None
     token = models.CharField(max_length=255, default="")
-    resetToken = models.CharField(max_length=255)
+    resetToken = models.CharField(max_length=255, default="")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
