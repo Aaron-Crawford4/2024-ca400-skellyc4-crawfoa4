@@ -510,6 +510,28 @@ class Register(APIView):
         user = User.objects.get(name=name)
         user.token = response.json().get('sha1')
         user.save()
+        subject = "Account Creation"
+        messageHTML = f"""
+            <html>
+            <head></head>
+            <body>
+                <p>Hi {user.name},</p>
+                <p>Thank you for creating your account on GITMD!</p>
+                <p>Your access token for git cloning your collections is: <strong>{user.token}</strong></p>
+                <p>Use this token on your machine to access your files locally if you wish.</p>
+            </body>
+            </html>
+            """
+        messagePlain = (
+            f"Hi {user.name},\n\n"
+            f"Thank you for creating your account on GITMD!\n"
+            f"Your access token for git cloning your collections is: {user.token}\n"
+            "Use this token on your machine to access your files locally if you wish."
+        )
+        recipient = [email]
+        email = EmailMultiAlternatives(subject, messagePlain, EMAIL_HOST_USER, recipient)
+        email.attach_alternative(messageHTML, "text/html")
+        email.send()
 
         if response.status_code != 201:
             return Response({'error': 'Failed to create user token'}, status=response.status_code)
