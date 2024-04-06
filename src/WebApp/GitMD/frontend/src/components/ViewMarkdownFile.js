@@ -20,6 +20,8 @@ import Switch from '@mui/joy/Switch';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import SearchIcon from '@mui/icons-material/Search';
 import InputAdornment from '@mui/material/InputAdornment';
+import Avatar from '@mui/material/Avatar';
+import { deepPurple } from '@mui/material/colors';
 
 export default class ViewMarkdownFile extends Component {
     constructor(props) {
@@ -334,9 +336,6 @@ export default class ViewMarkdownFile extends Component {
         repoArray = this.sortRepos(repoArray)
         fileArray = (this.sortFiles(fileArray))
         deletedFileArray = (this.sortFiles(deletedFileArray))
-        console.log("repoArray type:", typeof repoArray);
-        console.log("fileArray type:", typeof fileArray);
-        
         
         return (
 
@@ -408,7 +407,8 @@ export default class ViewMarkdownFile extends Component {
                                                     <FolderIcon />
                                                 </ListItemIcon>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                                    <div>{repo.name}</div>
+                                                    <div> {repo.name}</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}><Avatar sx={{ bgcolor: deepPurple[500], width: 24, height: 24,  marginRight: '8px' }}></Avatar> {repo.owner.login}</div>
                                                     <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${repo.created_at.substring(8, 10)}-${repo.created_at.substring(5, 7)}-${repo.created_at.substring(0, 4)}`}</div>
                                                 </div>
                                             </ListItemButton>
