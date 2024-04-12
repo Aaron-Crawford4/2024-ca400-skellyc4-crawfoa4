@@ -322,13 +322,17 @@ export default class ViewMarkdownFile extends Component {
         let repoArray;
         let fileArray = this.state.FileDate
         let deletedFileArray = this.state.deletedFiles
+        let title;
 
         if (view === 'my-collection') {
             repoArray = this.state.OwnedRepositories;
+            title = 'My Collections';
         } else if (view === 'shared-with-me') {
             repoArray = this.state.SharedRepositories;
+            title = 'Shared With Me';
         } else {
             repoArray = this.state.repositories;
+            title = 'Collections';
         }
         // console.log(repoArray)
         // console.log(fileArray)
@@ -341,12 +345,12 @@ export default class ViewMarkdownFile extends Component {
 
                 <Box component="main" sx={{ flexGrow: 1, p: 8 }}>
                 <Grid container spacing={1}>
-                    <Paper elevation={0} className="paper-container-home">
+                    <Paper elevation={0} className="paper-container-home" >
                     {this.state.RepoOrFile === 0 && (
                     <>
                         <Grid item xs={12} align="center">
                         <Typography style={{ marginRight: '90px', marginBottom: '25px' }} component="h4" variant="h4">
-                            Collections
+                            {title}
                         </Typography>
                         </Grid>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '2px' }}>

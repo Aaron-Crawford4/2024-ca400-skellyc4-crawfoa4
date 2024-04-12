@@ -93,6 +93,7 @@ class UserTestCase(TestCase):
         response = self.client.post("/api/logout", format="json")
         self.assertEqual(response.status_code, 200)
 
+
 class CreateTestCase(TestCase):
     def setUp(self):
 
@@ -142,9 +143,6 @@ class CreateTestCase(TestCase):
             print(f"Failed to delete user John_Doe2 on Gitea: {response.text}")
 
         url = f"http://gitea.gitmd.ie:80/api/v1/admin/users/John_Doe3"
-        headers = {
-            'Authorization': f'token 9812c3c5008c1da5927f7ef20b45535116a8ee87',
-        }
         response = requests.delete(url, headers=headers)
         if response.status_code != 204:
             print(f"Failed to delete user John_Doe3 on Gitea: {response.text}")

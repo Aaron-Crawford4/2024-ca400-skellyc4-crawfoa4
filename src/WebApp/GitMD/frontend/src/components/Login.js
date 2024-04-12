@@ -118,55 +118,61 @@ export default class Login extends Component {
   sendEmail = async (e) => {
     e.preventDefault();
 
-    fetch("/api/passwordReset", {
-        method: "PUT",
-        credentials: "include",
-        headers: { 
-            "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({
-            type: "request",
-            email: this.state.email
-          }),
-    })
-        .then((response) => response.json())
-        .then(() => {
-          this.setState({requestSent: true})
-        })
-        .catch((error) => {
-            console.error("Error sending email:", error);
-        });
+    try {
+      fetch("/api/passwordReset", {
+          method: "PUT",
+          credentials: "include",
+          headers: { 
+              "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({
+              type: "request",
+              email: this.state.email
+            }),
+      })
+          .then((response) => response.json())
+          .then(() => {
+            this.setState({requestSent: true})
+          })
+    }
+    catch(error) {
+      console.error("Error sending email:", error);
+    };
   }
 
   resetPassword = async (e) => {
     e.preventDefault();
+    try {
+      if(this.state.password == this.state.password2) {
 
-    if(this.state.password == this.state.password2) {
-
-    fetch("/api/passwordReset", {
-        method: "PUT",
-        credentials: "include",
-        headers: { 
-            "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({
-            type: "reset",
-            email: this.state.email,
-            resetToken: this.state.resetToken,
-            newPassword: this.state.password2
-          }),
-    })
-        .then((response) => response.json())
-        .then(() => {
-          window.location.reload();
-        })
-        .catch((error) => {
-            console.error("Error resetting email:", error);
-        });
+      fetch("/api/passwordReset", {
+          method: "PUT",
+          credentials: "include",
+          headers: { 
+              "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({
+              type: "reset",
+              email: this.state.email,
+              resetToken: this.state.resetToken,
+              newPassword: this.state.password2
+            }),
+      })
+          .then((response) => response.json())
+          .then(() => {
+            window.location.reload();
+          })
+          .catch((error) => {
+              console.error("Error resetting email:", error);
+          });
+      }
+      else {
+        this.setState({error: "Passwords do not match"})
+      }
     }
-    else {
-      this.setState({error: "Passwords do not match"})
-    }
+    catch(error) {
+      console.error("Error resetting password:", error);
+    };
   }
 
   render() {

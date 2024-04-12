@@ -73,36 +73,30 @@ class MarkdownFileView(APIView):
                 response = requests.get(url, json=data, headers=headers)
 
             dates = []
-            print("Current time:", datetime.datetime.now())
             with ThreadPoolExecutor(max_workers=5) as executor:
                 for data in executor.map(self.get_files, response.json(), [name] * len(name), [repoName] * len(repoName), [token] * len(token)):
                     dates.append(data)
-            print("Current time:", datetime.datetime.now())
+            print(dates)
             return Response(dates)
         
         elif(switch == "deletedFiles"):
-            try:
-                name = GiteaAPIUtils.make_owner_search_request(repoName, token)
-                url = f"{BASE_URL}/repos/{name}/{repoName}/commits"
-                headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-                data = {}
-                response = requests.get(url, json=data, headers=headers)
+            name = GiteaAPIUtils.make_owner_search_request(repoName, token)
+            url = f"{BASE_URL}/repos/{name}/{repoName}/commits"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+            data = {}
+            response = requests.get(url, json=data, headers=headers)
 
-                removed_files_with_date = []
-                removed_files = set()
-                print("hee--------------")
-                with ThreadPoolExecutor(max_workers=5) as executor:
-                    for data in executor.map(self.get_deleted_files, response.json(), [removed_files]):
-                        print(data)
-                        removed_files_with_date.append(data)
-                        removed_files.add(data[0])
-
-                return Response(removed_files_with_date)
-            except:
-                return Response([[]])
+            removed_files_with_date = []
+            removed_files = set()
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                for data in executor.map(self.get_deleted_files, response.json(), [removed_files]):
+                    removed_files_with_date.append(data)
+                    removed_files.add(data[0])
+            print(removed_files_with_date)
+            return Response(removed_files_with_date)
         
     def get_files(self, data, name, repoName, token):
         headers = {
@@ -111,7 +105,6 @@ class MarkdownFileView(APIView):
             }
         url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/commits?path=" + data["name"]
         response2 = requests.get(url, headers=headers)
-        print(data["name"])
         return [data["name"], response2.json()[-1]["created"]]
     
     def get_deleted_files(self, data, removed_files):
@@ -267,7 +260,6 @@ class GetPreviousVersions(APIView):
         repo = request.data.get('repo')
         file = request.data.get('file')
         owner = request.data.get('owner')
-        print(file)
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/commits"
         headers = {
             'Content-Type': 'application/json',
@@ -276,7 +268,6 @@ class GetPreviousVersions(APIView):
         response = requests.get(url, headers=headers)
         if response.status_code != 200: 
             return Response({'error': 'Failed to get previous commits'}, status=response.status_code)
-        print(response)
         Commitlist = []
         for commit_data in response.json():
             if(len(Commitlist) > 2):
@@ -291,16 +282,13 @@ class GetPreviousVersions(APIView):
                         author_date = commit_data["commit"]["author"]["date"]
                         if("+" in author_date):
                             author_date = author_date.split("+")[0]
-                        print(author_date)
                         date_split = dt.strptime(author_date, "%Y-%m-%dT%H:%M:%S")
-                        print("here")
                         formatted_date = date_split.strftime("%d/%m/%Y")
                         formatted_time = date_split.strftime("%H:%M:%S")
 
                         Commitlist.append([sha, author_name, formatted_date, formatted_time])
                 except:
                     print("No change entry")
-        print(Commitlist)
         for commit in Commitlist:
             url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/contents/" + file + "?ref=" + commit[0]
             headers = {
@@ -344,7 +332,6 @@ class MarkdownFileDelete(APIView):
             'sha' : sha,
         }
         response = requests.delete(url, json=data, headers=headers)
-        print(response.status_code)
         if response.status_code != 200: 
             return Response({'error': 'Failed to delete user file'}, status=response.status_code)
 
@@ -366,7 +353,6 @@ class RepoDelete(APIView):
         }
 
         response = requests.delete(url, headers=headers)
-        print(response.status_code)
         if response.status_code != 200: 
             return Response({'error': 'Failed to delete user repo'}, status=response.status_code)
 
@@ -403,8 +389,6 @@ class AddUserToRepo(APIView):
         repo = request.data.get('repo')
         addedUser = request.data.get('addedUser')
         repoFullName = request.data.get('repoFullName')
-        # print("fullName " + repoFullName)
-        # print("repo " + repo)
         
         if(addedUser == GiteaAPIUtils.make_owner_search_request(repoFullName, token)):
             return Response({'error': 'Collaborator is already owner'})
@@ -506,7 +490,6 @@ class Register(APIView):
             'scopes': ['write:issue', 'write:notification', 'write:repository', 'write:user']
         }
         response = requests.post(url, auth=HTTPBasicAuth(name, password), json=data, headers=headers)
-        print("Token = " + response.json().get('sha1'))
         user = User.objects.get(name=name)
         user.token = response.json().get('sha1')
         user.save()
@@ -597,16 +580,13 @@ class Logout(APIView):
 class PasswordReset(APIView):
 
     def put(self, request, format=None):
-        print("----------------------------------")
 
         email = request.data['email']
-        print(email)
         user = User.objects.filter(email=email).first()
         type = request.data['type']
         response = Response()
         if(type == "reset"):
             resetToken = request.data['resetToken']
-            print("user " + user.resetToken + " entered " + resetToken)
             if(resetToken != user.resetToken):
 
                 response.data = {
@@ -615,7 +595,6 @@ class PasswordReset(APIView):
                 return response
             else:
                 newPassword = request.data['newPassword']
-                print(email, newPassword)
                 user.set_password(newPassword) 
                 user.save()
                 response = Response()
@@ -627,7 +606,6 @@ class PasswordReset(APIView):
             characters = string.ascii_letters + string.digits
             resetToken = ''.join(random.choice(characters) for _ in range(16))
             user.resetToken = resetToken
-            print("user reset token set to " + user.resetToken)
             subject = "Password Reset"
             messageHTML = f"""
                 <html>

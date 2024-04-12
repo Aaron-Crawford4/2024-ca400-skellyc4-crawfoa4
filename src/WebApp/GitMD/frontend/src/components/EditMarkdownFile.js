@@ -7,7 +7,6 @@ import ReactMarkdown from "react-markdown";
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw'
 
 export default class EditMarkdownFile extends Component {
   constructor(props) {
@@ -97,7 +96,7 @@ export default class EditMarkdownFile extends Component {
             >
             Save
           </Button>
-          </div>
+        </div>
           <TextField
             label="Title"
             variant="outlined"

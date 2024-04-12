@@ -4,8 +4,6 @@ import ReactMarkdown from "react-markdown";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import Paper from '@mui/material/Paper';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';
 import Modal from "react-modal";
 import Box from '@mui/material/Box';
 import RestoreIcon from '@mui/icons-material/Restore';
