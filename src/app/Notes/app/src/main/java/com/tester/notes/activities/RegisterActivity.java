@@ -57,38 +57,40 @@ public class RegisterActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                         runOnUiThread(() -> {
-                            Toast.makeText(RegisterActivity.this, "Register success", Toast.LENGTH_SHORT).show();
-                            if (response.isSuccessful()) Log.i("Test Logging", "register successful");
-                            else Log.e("Test Logging", "register fail");
+                            if (response.isSuccessful()) {
+                                Log.i("Test Logging", "register successful");
+                                Toast.makeText(RegisterActivity.this, "Register success, Logging you in", Toast.LENGTH_SHORT).show();
+
+                                Call<User> loginCall = client.login(inputEmail.getText().toString(), inputPassword.getText().toString());
+                                loginCall.enqueue(new Callback<>() {
+                                    @Override
+                                    public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
+                                        if (response.isSuccessful()) {
+                                            runOnUiThread(() -> {
+                                                User user = response.body();
+                                                if (user != null) {
+                                                    Log.i("Test Logging", user.getJwt());
+                                                    Auth.setAuthToken(user.getJwt());
+                                                    Intent intent = new Intent(getApplicationContext(), CollectionsActivity.class);
+                                                    intent.putExtra("user", user);
+                                                    loginLauncher.launch(intent);
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+                                        Log.e("Fail", "Failed Login: ", t);
+                                    }
+                                });
+                            } else Toast.makeText(RegisterActivity.this, "Registration Failed", Toast.LENGTH_SHORT).show();
                         });
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                         Log.e("Fail", "Failed Registration: ", t);
-                    }
-                });
-
-                Call<User> loginCall = client.login(inputEmail.getText().toString(), inputPassword.getText().toString());
-                loginCall.enqueue(new Callback<>() {
-                    @Override
-                    public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
-                        runOnUiThread(() -> {
-                            Toast.makeText(RegisterActivity.this, "login success", Toast.LENGTH_SHORT).show();
-                            User user = response.body();
-                            if (user != null) {
-                                Log.i("Test Logging", user.getJwt());
-                                Auth.setAuthToken(user.getJwt());
-                                Intent intent = new Intent(getApplicationContext(), CollectionsActivity.class);
-                                intent.putExtra("user", user);
-                                loginLauncher.launch(intent);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
-                        Log.e("Fail", "Failed Login: ", t);
                     }
                 });
             }

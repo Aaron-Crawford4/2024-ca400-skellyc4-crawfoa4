@@ -19,16 +19,30 @@
         android:layout_height="@dimen/_20sdp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_collection"
-        app:tint="@color/colorSearchIcon"/>
+        app:tint="@color/colorIcons"/>
     <TextView
         android:id="@+id/textName"
-        android:layout_width="@dimen/_220sdp"
+        android:layout_width="@dimen/_130sdp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
         android:layout_marginEnd="@dimen/_8sdp"
         android:includeFontPadding="false"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_13ssp"
+        />
+    <TextView
+        android:id="@+id/textDateTime"
+        android:layout_width="@dimen/_80sdp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:layout_marginBottom="@dimen/_8sdp"
+        android:includeFontPadding="false"
+        android:textColor="@color/colorIcons"
+        android:textSize="@dimen/_7ssp"
+        app:layout_constraintStart_toEndOf="@+id/textTitle"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         />
     <ImageView
         android:id="@+id/imageDeleteRepo"

@@ -1,8 +1,10 @@
 package com.tester.notes.entities;
 
+import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class Repository implements Serializable {
     private int id;
 
@@ -10,7 +12,7 @@ public class Repository implements Serializable {
         return owner;
     }
 
-    private Owner  owner;
+    private Owner owner;
 
     public String getName() {
         return name;
@@ -20,6 +22,10 @@ public class Repository implements Serializable {
 
     public String getFull_name() {
         return full_name;
+    }
+
+    public String getUpdated_at() {
+        return updated_at;
     }
 
     private String full_name;
@@ -101,6 +107,7 @@ public class Repository implements Serializable {
             return username;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "Owner{" +
@@ -117,6 +124,7 @@ public class Repository implements Serializable {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Repository{" +

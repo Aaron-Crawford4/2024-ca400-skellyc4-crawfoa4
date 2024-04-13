@@ -1,11 +1,9 @@
 package com.tester.notes.adapters;
 
-import android.annotation.SuppressLint;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import android.widget.TextView;
 
@@ -15,33 +13,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.tester.notes.R;
 import com.tester.notes.entities.Note;
-import com.tester.notes.listeners.NotesListener;
+import com.tester.notes.listeners.DeletedNotesListener;
+
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder>{
+public class DeletedNotesAdapter extends RecyclerView.Adapter<DeletedNotesAdapter.NoteViewHolder>{
+    private final List<Note> notes;
+    private final DeletedNotesListener notesListener;
 
-    private List<Note> notes;
-    private final List<Note> notesSource;
-    private final NotesListener notesListener;
-    private Timer timer;
-
-    public NotesAdapter(List<Note> notes, NotesListener notesListener) {
+    public DeletedNotesAdapter(List<Note> notes, DeletedNotesListener notesListener) {
         this.notes = notes;
         this.notesListener = notesListener;
-        notesSource = notes;
     }
 
     @NonNull
     @Override
-    public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new NoteViewHolder(
+    public DeletedNotesAdapter.NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new DeletedNotesAdapter.NoteViewHolder(
                 LayoutInflater.from(parent.getContext()).inflate(
                         R.layout.item_container_note,
                         parent,
@@ -51,9 +43,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull DeletedNotesAdapter.NoteViewHolder holder, int position) {
         holder.setNote(notes.get(position));
-        holder.layoutNote.setOnClickListener(view -> notesListener.onNoteClicked(notes.get(position), position));
+        holder.imageRestoreFile.setOnClickListener(view -> notesListener.onDeletedNoteClicked(notes.get(position), position));
     }
 
     @Override
@@ -69,10 +61,14 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     static class NoteViewHolder extends RecyclerView.ViewHolder {
         TextView textTitle, textDateTime;
         ConstraintLayout layoutNote;
+        ImageView imageRestoreFile;
+
         NoteViewHolder(@NonNull View itemView){
             super(itemView);
             textTitle = itemView.findViewById(R.id.textTitle);
             textDateTime = itemView.findViewById(R.id.textDateTime);
+            imageRestoreFile = itemView.findViewById(R.id.imageRestoreFile);
+            imageRestoreFile.setVisibility(View.VISIBLE);
             layoutNote = itemView.findViewById(R.id.layoutNote);
         }
         void setNote(Note note){
@@ -83,28 +79,5 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             textDateTime.setText(dateTime.format(formatter));
         }
     }
-    public void searchNotes(final String searchTerm){
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void run() {
-                if (searchTerm.trim().isEmpty()){
-                    notes = notesSource;
-                }else {
-                    ArrayList<Note> temp = new ArrayList<>();
-                    for (Note note : notesSource){
-                        if (note.getName().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
-                            temp.add(note);
-                        }
-                    }
-                    notes = temp;
-                }
-                new Handler(Looper.getMainLooper()).post(() -> notifyDataSetChanged());
-            }
-        }, 300);
-    }
-    public void cancelTimer(){
-        if (timer != null) timer.cancel();
-    }
 }
+

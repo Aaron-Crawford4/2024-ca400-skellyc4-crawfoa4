@@ -22,4 +22,6 @@
     <string name="shared">Shared</string>
     <string name="users_with_access">Users with Access</string>
     <string name="close">close</string>
+    <string name="file_history">File History</string>
+    <string name="previous_content">Previous Content</string>
 </resources>

@@ -3,6 +3,7 @@ package com.tester.notes.entities;
 import java.io.Serializable;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class NoteContent implements Serializable {
     private String name;
     private String path;

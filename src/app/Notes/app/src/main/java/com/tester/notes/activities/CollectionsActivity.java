@@ -15,6 +15,8 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,7 +87,20 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
 
         setFilterListeners();
 
-
+        EditText inputSearch = findViewById(R.id.inputSearch);
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                repoAdapter.cancelTimer();
+            }
+            @Override
+            public void afterTextChanged(Editable searchTerm) {
+                if (repoList.size() != 0) repoAdapter.searchRepos(searchTerm.toString());
+            }
+        });
     }
     @SuppressLint("NotifyDataSetChanged")
     private void setFilterListeners(){
@@ -184,7 +199,12 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                     });
                 }
             }
-            executorService.execute(new CreateRepoTask());
+            String stringCollectionName = inputCollectionName.getText().toString();
+            if (stringCollectionName.contains(" ")) {
+                inputCollectionName.setError("Collection Names may not contain spaces");
+            } else if (stringCollectionName.isEmpty()) {
+                inputCollectionName.setError("Enter a Collection Name");
+            } else executorService.execute(new CreateRepoTask());
         });
 
         view.findViewById(R.id.buttonCancel).setOnClickListener(cancelView -> {

@@ -20,7 +20,7 @@
         android:paddingStart="@dimen/_8sdp"
         android:paddingEnd="@dimen/_8sdp"
         android:text="@string/delete_note_confirmation_message"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_13ssp"
         app:layout_constraintTop_toTopOf="parent"
         />

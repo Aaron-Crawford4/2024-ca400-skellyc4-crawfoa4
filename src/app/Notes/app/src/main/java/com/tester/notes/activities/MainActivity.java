@@ -4,6 +4,7 @@ import static com.tester.notes.utils.Constants.API_BASE_URL;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.LauncherActivity;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -25,12 +26,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.tester.notes.R;
+import com.tester.notes.adapters.DeletedNotesAdapter;
 import com.tester.notes.adapters.NotesAdapter;
 
 import com.tester.notes.adapters.UserAdapter;
 
 import com.tester.notes.entities.Repository;
+import com.tester.notes.listeners.DeletedNotesListener;
 import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
@@ -48,11 +52,12 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 
-public class MainActivity extends AppCompatActivity implements NotesListener {
-    private RecyclerView notesRecyclerView;
-    private List<Note> noteList;
+public class MainActivity extends AppCompatActivity implements NotesListener, DeletedNotesListener {
+    private RecyclerView notesRecyclerView, deletedNotesRecyclerView;
+    private List<Note> noteList, deletedNoteList;
     private List<String> userList;
     private NotesAdapter notesAdapter;
+    private DeletedNotesAdapter deletedNotesAdapter;
     private UserAdapter userAdapter;
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
     private int noteClickedPosition = -1;
@@ -92,9 +97,14 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         });
 
         notesRecyclerView = findViewById(R.id.notesRecyclerView);
+        deletedNotesRecyclerView = findViewById(R.id.deletedNotesRecyclerView);
         notesRecyclerView.setLayoutManager(
-                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
         );
+        deletedNotesRecyclerView.setLayoutManager(
+                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
+        );
+
 
         noteList = new ArrayList<>();
         notesAdapter = new NotesAdapter(noteList, this);
@@ -120,6 +130,19 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         });
         ImageView imageCollaborators = findViewById(R.id.imageCollaborators);
         imageCollaborators.setOnClickListener(view -> createUserDialog());
+
+        MaterialSwitch switchShowDeleted = findViewById(R.id.switchShowDeleted);
+        switchShowDeleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked){
+                if (deletedNoteList == null) getDeletedNotes();
+                notesRecyclerView.setVisibility(View.GONE);
+                deletedNotesRecyclerView.setVisibility(View.VISIBLE);
+
+            } else{
+                notesRecyclerView.setVisibility(View.VISIBLE);
+                deletedNotesRecyclerView.setVisibility(View.GONE);
+            }
+        });
     }
     public static Repository getRepoDetails(){
         return repo;
@@ -133,6 +156,81 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         intent.putExtra("note", note);
         intent.putExtra("repo", repo);
         addNoteLauncher.launch(intent);
+    }
+
+    @Override
+    public void onDeletedNoteClicked(Note note, int position) {
+        noteClickedPosition = position;
+        restoreFile();
+    }
+    private void restoreFile(){
+        Note restoredFile = deletedNoteList.get(noteClickedPosition);
+        class RestoreFileTask implements Runnable{
+
+            @Override
+            public void run() {
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
+                Call<Void> call = client.restoreDeletedFile(restoredFile.getName(), repo.getName());
+                call.enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                        if (response.isSuccessful()){
+                            noteList.add(restoredFile);
+                            deletedNoteList.remove(noteClickedPosition);
+                            runOnUiThread(() -> {
+                                notesAdapter.notifyItemInserted(0);
+                                deletedNotesAdapter.notifyItemRemoved(noteClickedPosition);
+                                Toast.makeText(MainActivity.this, "Restored " + restoredFile.getName(), Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                        Log.e("Fail", "failed to restore " + restoredFile.getName(), t);
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to restore " + restoredFile.getName(), Toast.LENGTH_SHORT).show());
+                    }
+                });
+            }
+        }
+        executorService.execute(new RestoreFileTask());
+    }
+
+    private void getDeletedNotes(){
+        class GetDeletedNotesTask implements Runnable{
+
+            @Override
+            public void run() {
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
+                Call<List<List<String>>> call = client.getAllNotes("deletedFiles", repo.getName());
+                call.enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<List<String>>> call, @NonNull Response<List<List<String>>> response) {
+                        if (response.body() != null && response.isSuccessful()) {
+                            deletedNoteList = new ArrayList<>();
+                            List<List<String>> responseData = response.body();
+                            for (List<String> noteDetails : responseData) {
+                                if (!noteDetails.isEmpty()) {
+                                    Note note = new Note(noteDetails.get(0), noteDetails.get(1));
+                                    deletedNoteList.add(note);
+                                }
+                            }
+                            deletedNotesAdapter = new DeletedNotesAdapter(deletedNoteList, MainActivity.this);
+                            deletedNotesRecyclerView.setAdapter(deletedNotesAdapter);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<List<String>>> call, @NonNull Throwable t) {
+                        Log.e("Fail", "failed to retrieve notes: ", t);
+                        Toast.makeText(MainActivity.this, "Failed to retrieve notes", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+        executorService.execute(new GetDeletedNotesTask());
     }
 
     private void getNotes(RequestType requestType) {
@@ -160,7 +258,8 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
                                     noteList.addAll(notes);
                                     notesAdapter.notifyDataSetChanged();
                                 }else if (requestType == RequestType.ADD){
-                                    noteList.add(0, notes.get(notes.size()-1));
+                                    noteList.clear();
+                                    noteList.addAll(notes);
                                     notesAdapter.notifyItemInserted(0);
                                     notesRecyclerView.smoothScrollToPosition(0);
                                 }else if (requestType == RequestType.UPDATE) {
@@ -174,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
 
                     @Override
                     public void onFailure(@NonNull Call<List<List<String>>> call, @NonNull Throwable t) {
-                        Log.e("Fail", "failed to get notes: ", t);
+                        Log.e("Fail", "failed to retrieve notes: ", t);
                         Toast.makeText(MainActivity.this, "Failed to retrieve notes", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -201,6 +300,11 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
                             }
                         }
                         runOnUiThread(() -> {
+
+                            if (deletedNoteList != null && isDeleteNote){
+                                deletedNoteList.add(noteList.get(noteClickedPosition));
+                                deletedNotesAdapter.notifyItemInserted(0);
+                            }
                             noteList.remove(noteClickedPosition);
 
                             if (isDeleteNote){
@@ -244,7 +348,11 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         userRecyclerView.setAdapter(userAdapter);
 
         getUsers();
-        view.findViewById(R.id.imageAddCollaborator).setOnClickListener(addView -> addUser(inputUser.getText().toString()));
+        view.findViewById(R.id.imageAddCollaborator).setOnClickListener(addView -> {
+            if (inputUser.getText().toString().isEmpty()){
+                inputUser.setError("Enter a User to add");
+            }else addUser(inputUser.getText().toString());
+        });
 
         view.findViewById(R.id.buttonCancel).setOnClickListener(cancelView -> {
             createUserDialog.dismiss();

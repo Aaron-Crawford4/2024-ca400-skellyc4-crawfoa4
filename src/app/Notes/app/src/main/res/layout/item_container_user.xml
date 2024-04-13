@@ -20,7 +20,7 @@
     android:layout_marginStart="@dimen/_8sdp"
     android:layout_marginEnd="@dimen/_8sdp"
     android:includeFontPadding="false"
-    android:textColor="@color/colorWhite"
+    android:textColor="@color/colorPrimaryDark"
     android:textSize="@dimen/_13ssp"
     />
     <ImageView

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/layoutUserList"
+    android:id="@+id/layoutFileHistory"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
@@ -10,7 +10,7 @@
     android:background="@drawable/background_dialog"
     android:maxHeight="@dimen/_300sdp">
     <TextView
-        android:id="@+id/textUsersWithAccess"
+        android:id="@+id/textFileHistory"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_12sdp"
@@ -19,52 +19,13 @@
         android:paddingHorizontal="@dimen/_5sdp"
         android:gravity="center_vertical"
         android:includeFontPadding="false"
-        android:text="@string/users_with_access"
+        android:text="@string/file_history"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_13ssp"
         app:layout_constraintTop_toTopOf="parent"
         />
-    <LinearLayout
-        android:id="@+id/layoutAddUser"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_8sdp"
-        android:layout_marginTop="@dimen/_15sdp"
-        android:layout_marginEnd="@dimen/_8sdp"
-        android:background="@drawable/background_search"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="@dimen/_10sdp"
-        android:paddingEnd="@dimen/_10sdp"
-        app:layout_constraintTop_toBottomOf="@id/textUsersWithAccess">
-
-        <EditText
-            android:id="@+id/inputUser"
-            android:layout_width="@dimen/_230sdp"
-            android:layout_height="@dimen/_37sdp"
-            android:layout_marginEnd="@dimen/_8sdp"
-            android:background="@null"
-            android:hint="@string/username"
-            android:imeOptions="actionDone"
-            android:importantForAutofill="no"
-            android:includeFontPadding="false"
-            android:inputType="text"
-            android:textColor="@color/colorPrimaryDark"
-            android:textColorHint="@color/colorTextHint"
-            android:textSize="@dimen/_13ssp"
-            />
-        <ImageView
-            android:id="@+id/imageAddCollaborator"
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_add"
-            app:tint="@color/colorIcons"
-            android:layout_marginEnd="@dimen/_20sdp"
-            />
-    </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/userRecyclerView"
+        android:id="@+id/fileHistoryRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/_2sdp"
@@ -74,7 +35,7 @@
         android:paddingStart="0dp"
         android:paddingEnd="@dimen/_12sdp"
         android:paddingBottom="@dimen/_12sdp"
-        app:layout_constraintTop_toBottomOf="@id/layoutAddUser"
+        app:layout_constraintTop_toBottomOf="@id/textFileHistory"
         />
     <Button
         android:id="@+id/buttonCancel"
@@ -85,7 +46,7 @@
         android:textAllCaps="true"
         android:text="@string/close"
         android:textColor="@color/colorPrimaryDark"
-        app:layout_constraintTop_toBottomOf="@+id/userRecyclerView"
+        app:layout_constraintTop_toBottomOf="@+id/fileHistoryRecyclerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         />

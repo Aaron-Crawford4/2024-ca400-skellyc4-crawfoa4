@@ -63,12 +63,11 @@ public class LoginActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             User user = response.body();
                             if (user != null && response.isSuccessful()) {
-                                Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
                                 Auth.setAuthToken(user.getJwt());
                                 Intent intent = new Intent(getApplicationContext(), CollectionsActivity.class);
                                 intent.putExtra("user", user);
                                 loginLauncher.launch(intent);
-                            } else  Toast.makeText(LoginActivity.this, "Login Fail", Toast.LENGTH_SHORT).show();
+                            } else  Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
                         });
                     }
 

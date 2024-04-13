@@ -26,7 +26,7 @@
         android:layout_marginEnd="@dimen/_12sdp"
         android:includeFontPadding="false"
         android:text="@string/login"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_20ssp"
         />
     <EditText
@@ -43,7 +43,7 @@
         android:importantForAutofill="no"
         android:includeFontPadding="false"
         android:inputType="textEmailAddress"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textColorHint="@color/colorTextHint"
         android:textSize="@dimen/_13ssp"
         />
@@ -61,7 +61,7 @@
         android:importantForAutofill="no"
         android:includeFontPadding="false"
         android:inputType="textPassword"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textColorHint="@color/colorTextHint"
         android:textSize="@dimen/_13ssp"
         />
@@ -74,7 +74,7 @@
         android:layout_marginHorizontal="@dimen/_12sdp"
 
         android:text="@string/submit"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/colorWhite"
         android:textSize="@dimen/_13ssp"
         android:backgroundTint="@color/colorAccent"
         />
@@ -91,7 +91,7 @@
             android:layout_marginHorizontal="@dimen/_12sdp"
 
             android:text="@string/register"
-            android:textColor="@color/colorPrimaryDark"
+            android:textColor="@color/colorWhite"
             android:textSize="@dimen/_13ssp"
             android:backgroundTint="@color/colorAccent"
             />

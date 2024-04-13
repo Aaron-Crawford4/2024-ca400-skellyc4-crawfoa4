@@ -16,7 +16,7 @@
         android:layout_marginEnd="@dimen/_12sdp"
         android:includeFontPadding="false"
         android:text="@string/collections"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_20ssp"
         app:layout_constraintTop_toTopOf="parent"
         />
@@ -100,7 +100,7 @@
             android:importantForAutofill="no"
             android:includeFontPadding="false"
             android:inputType="text"
-            android:textColor="@color/colorWhite"
+            android:textColor="@color/colorPrimaryDark"
             android:textColorHint="@color/colorTextHint"
             android:textSize="@dimen/_13ssp"
             />

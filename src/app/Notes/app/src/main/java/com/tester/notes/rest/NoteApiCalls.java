@@ -34,4 +34,11 @@ public interface NoteApiCalls {
     @FormUrlEncoded
     @POST("/api/repoDelete")
     Call<Void> repoDelete(@Field("repo") String repo);
+    @FormUrlEncoded
+    @POST("/api/restoreFile")
+    Call<Void> restoreDeletedFile(@Field("file") String file, @Field("repoName") String repoName);
+
+    @FormUrlEncoded
+    @POST("/api/previousVersions")
+    Call<List<List<String>>> getPreviousVersions(@Field("file") String file, @Field("repo") String repo, @Field("owner") String owner);
 }

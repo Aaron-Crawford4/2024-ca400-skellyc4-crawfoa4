@@ -16,9 +16,20 @@
         android:layout_marginEnd="@dimen/_12sdp"
         android:includeFontPadding="false"
         android:text="@string/my_notes"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_20ssp"
         app:layout_constraintTop_toTopOf="parent"
+        />
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchShowDeleted"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_marginEnd="@dimen/_12sdp"
+        app:thumbIcon="@drawable/ic_delete"
+
+        app:layout_constraintBottom_toBottomOf="@+id/textMyNotes"
+        app:layout_constraintEnd_toStartOf="@id/imageCollaborators"
+        app:layout_constraintTop_toTopOf="@+id/textMyNotes"
         />
     <ImageView
         android:id="@+id/imageCollaborators"
@@ -65,7 +76,7 @@
             android:importantForAutofill="no"
             android:includeFontPadding="false"
             android:inputType="text"
-            android:textColor="@color/colorWhite"
+            android:textColor="@color/colorPrimaryDark"
             android:textColorHint="@color/colorTextHint"
             android:textSize="@dimen/_13ssp"
             />
@@ -79,11 +90,23 @@
         android:layout_marginStart="@dimen/_2sdp"
         android:layout_marginEnd="@dimen/_2sdp"
         android:clipToPadding="false"
-        android:paddingStart="0dp"
-        android:paddingEnd="@dimen/_12sdp"
+        android:paddingHorizontal="0dp"
         android:paddingBottom="@dimen/_12sdp"
         app:layout_constraintBottom_toTopOf="@id/imageAddNote"
         app:layout_constraintTop_toBottomOf="@id/layoutSearch"
+        />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/deletedNotesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/_2sdp"
+        android:layout_marginEnd="@dimen/_2sdp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="0dp"
+        android:paddingBottom="@dimen/_12sdp"
+        app:layout_constraintBottom_toTopOf="@id/imageAddNote"
+        app:layout_constraintTop_toBottomOf="@id/layoutSearch"
+        android:visibility="gone"
         />
     
     <ImageView

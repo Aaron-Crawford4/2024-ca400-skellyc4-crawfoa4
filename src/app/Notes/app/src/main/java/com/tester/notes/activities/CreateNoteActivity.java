@@ -9,10 +9,14 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +26,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tester.notes.R;
+import com.tester.notes.adapters.PrevVerNotesAdapter;
 import com.tester.notes.entities.NoteContent;
 import com.tester.notes.entities.Repository;
+import com.tester.notes.listeners.NotesListener;
 import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.retrofit.RetrofitClient;
@@ -31,18 +37,23 @@ import com.tester.notes.retrofit.RetrofitClient;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.noties.markwon.Markwon;
+import io.noties.markwon.editor.MarkwonEditor;
+import io.noties.markwon.editor.MarkwonEditorTextWatcher;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class CreateNoteActivity extends AppCompatActivity {
+public class CreateNoteActivity extends AppCompatActivity implements NotesListener {
 
     private EditText inputNoteTitle, inputNoteText;
     private TextView textDateTime;
@@ -50,13 +61,19 @@ public class CreateNoteActivity extends AppCompatActivity {
     private Note existingNote;
     private String noteSha;
     private AlertDialog deleteNoteDialog;
+    private Dialog fileHistoryDialog;
     private Repository repo;
+    private List<Note> prevFileVersions;
+    private PrevVerNotesAdapter notesAdapter;
 
-    private final ActivityResultLauncher<Intent> previewNoteLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> noteLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    Log.println(Log.INFO, "Activity Result Logging", "Note changes saved to db successfully");
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Log.println(Log.INFO, "Activity Result Logging", "Previewed Note");
+                    fileHistoryDialog.dismiss();
+                    inputNoteText.setText(result.getData().getStringExtra("restoredContent"));
+                    getNoteContent(true);
             }
         }
     );
@@ -79,11 +96,13 @@ public class CreateNoteActivity extends AppCompatActivity {
         inputNoteText = findViewById(R.id.inputNoteText);
         textDateTime = findViewById(R.id.textDateTime);
 
+        setupMarkdownHighlighting();
+
         ImageView imagePreviewNote = findViewById(R.id.imagePreview);
         imagePreviewNote.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), MarkdownPreviewActivity.class);
             intent.putExtra("noteText", inputNoteText.getText().toString());
-            previewNoteLauncher.launch(intent);
+            noteLauncher.launch(intent);
         });
 
         textDateTime.setText(
@@ -99,13 +118,96 @@ public class CreateNoteActivity extends AppCompatActivity {
 
         if(getIntent().getBooleanExtra("isViewOrUpdate", false)){
             existingNote = (Note) previousIntent.getSerializableExtra("note");
-            getNoteContent();
+            getNoteContent(false);
         }
         if(existingNote != null){
+            inputNoteTitle.setInputType(InputType.TYPE_NULL);
             findViewById(R.id.imageDeleteNote).setVisibility(View.VISIBLE);
             findViewById(R.id.imageDeleteNote).setOnClickListener(view -> createDeleteDialog());
+            findViewById(R.id.imageFileHistory).setVisibility(View.VISIBLE);
+            findViewById(R.id.imageFileHistory).setOnClickListener(view -> createHistoryDialog());
         }
     }
+
+    private void setupMarkdownHighlighting() {
+        final Markwon markwon = Markwon.create(this);
+        final MarkwonEditor editor = MarkwonEditor.create(markwon);
+        inputNoteText.addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
+                editor,
+                Executors.newCachedThreadPool(),
+                inputNoteText));
+    }
+
+    private void createHistoryDialog() {
+        prevFileVersions = new ArrayList<>();
+        notesAdapter = new PrevVerNotesAdapter(prevFileVersions, CreateNoteActivity.this);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = LayoutInflater.from(this).inflate(
+                R.layout.layout_file_history,
+                findViewById(R.id.layoutFileHistory)
+        );
+        builder.setView(view);
+        fileHistoryDialog = builder.create();
+        if (fileHistoryDialog.getWindow() != null){
+            fileHistoryDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+        }
+        RecyclerView fileHistoryRecyclerView = view.findViewById(R.id.fileHistoryRecyclerView);
+        fileHistoryRecyclerView.setLayoutManager(
+                new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
+        );
+        fileHistoryRecyclerView.setAdapter(notesAdapter);
+
+        getPrevNoteVersions();
+
+        view.findViewById(R.id.buttonCancel).setOnClickListener(cancelView -> {
+            fileHistoryDialog.dismiss();
+            fileHistoryDialog = null;
+        });
+
+        fileHistoryDialog.show();
+    }
+
+    private void getPrevNoteVersions() {
+        class GetPreviousVersionsTask implements Runnable{
+
+            @Override
+            public void run() {
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
+                Call<List<List<String>>> call = client.getPreviousVersions(existingNote.getName(), repo.getName(), repo.getOwner().getUsername());
+                call.enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<List<String>>> call, @NonNull Response<List<List<String>>> response) {
+                        if (response.body() != null) {
+                            for (List<String> noteDetails : response.body()) {
+                                prevFileVersions.add(new Note(noteDetails.get(0), existingNote.getName(), noteDetails.get(2), noteDetails.get(3)));
+                                notesAdapter.notifyItemInserted(0);
+                            }
+                            Log.i("Test Log", "GetPreviousVersionsTask task successful");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<List<String>>> call, @NonNull Throwable t) {
+                        Log.e("Request Error", "Failed GetPreviousVersionsTask", t);
+                    }
+                });
+            }
+        }
+        executorService.execute(new GetPreviousVersionsTask());
+    }
+
+    @Override
+    public void onNoteClicked(Note note, int position) {
+        Log.i("Test Log", "onNoteClicked: " + note);
+        Intent intent = new Intent(getApplicationContext(), ViewNote.class);
+        intent.putExtra("note", note);
+        intent.putExtra("repo", repo);
+        intent.putExtra("sha", noteSha);
+        noteLauncher.launch(intent);
+    }
+
 
     private void createDeleteDialog(){
         if (deleteNoteDialog == null){
@@ -160,12 +262,14 @@ public class CreateNoteActivity extends AppCompatActivity {
         deleteNoteDialog.show();
     }
 
-    private void getNoteContent(){
-        inputNoteTitle.setText(existingNote.getName());
+    private void getNoteContent(Boolean gettingNewSha){
+        if (!gettingNewSha) {
+            inputNoteTitle.setText(existingNote.getName());
 
-        OffsetDateTime dateTime = OffsetDateTime.parse(existingNote.getDateCreated());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault());
-        textDateTime.setText(dateTime.format(formatter));
+            OffsetDateTime dateTime = OffsetDateTime.parse(existingNote.getDateCreated());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault());
+            textDateTime.setText(dateTime.format(formatter));
+        }
 
         class GetNoteContentTask implements Runnable{
             @Override
@@ -178,9 +282,11 @@ public class CreateNoteActivity extends AppCompatActivity {
                     public void onResponse(@NonNull Call<NoteContent> call, @NonNull Response<NoteContent> response) {
                         if (response.isSuccessful() && response.body()!= null){
                             noteSha = response.body().getSha();
-                            byte[] decodedBytes = Base64.getDecoder().decode(response.body().getContent());
-                            String decodedText = new String(decodedBytes);
-                            inputNoteText.setText(decodedText);
+                            if (!gettingNewSha) {
+                                byte[] decodedBytes = Base64.getDecoder().decode(response.body().getContent());
+                                String decodedText = new String(decodedBytes);
+                                inputNoteText.setText(decodedText);
+                            }
                         }
                     }
 

@@ -1,12 +1,9 @@
 package com.tester.notes.adapters;
 
 import android.annotation.SuppressLint;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,25 +14,16 @@ import com.tester.notes.R;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder>{
+public class PrevVerNotesAdapter extends RecyclerView.Adapter<PrevVerNotesAdapter.NoteViewHolder>{
 
     private List<Note> notes;
-    private final List<Note> notesSource;
     private final NotesListener notesListener;
-    private Timer timer;
 
-    public NotesAdapter(List<Note> notes, NotesListener notesListener) {
+    public PrevVerNotesAdapter(List<Note> notes, NotesListener notesListener) {
         this.notes = notes;
         this.notesListener = notesListener;
-        notesSource = notes;
     }
 
     @NonNull
@@ -75,36 +63,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             textDateTime = itemView.findViewById(R.id.textDateTime);
             layoutNote = itemView.findViewById(R.id.layoutNote);
         }
+        @SuppressLint("SetTextI18n")
         void setNote(Note note){
             textTitle.setText(note.getName());
-            OffsetDateTime dateTime = OffsetDateTime.parse(note.getDateCreated());
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault());
-            textDateTime.setText(dateTime.format(formatter));
+            textDateTime.setText(note.getDateCreated() + " " + note.getTimeCreated());
         }
-    }
-    public void searchNotes(final String searchTerm){
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void run() {
-                if (searchTerm.trim().isEmpty()){
-                    notes = notesSource;
-                }else {
-                    ArrayList<Note> temp = new ArrayList<>();
-                    for (Note note : notesSource){
-                        if (note.getName().toLowerCase(Locale.ENGLISH).contains(searchTerm.toLowerCase(Locale.ENGLISH))){
-                            temp.add(note);
-                        }
-                    }
-                    notes = temp;
-                }
-                new Handler(Looper.getMainLooper()).post(() -> notifyDataSetChanged());
-            }
-        }, 300);
-    }
-    public void cancelTimer(){
-        if (timer != null) timer.cancel();
     }
 }
