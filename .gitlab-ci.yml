@@ -41,6 +41,8 @@ react_test:
   image: node:latest
   script:
     - cd src/WebApp/GitMD/frontend
+    - npm install
+    - npm install remark-gfm
     - npm test
 
 deploy:
