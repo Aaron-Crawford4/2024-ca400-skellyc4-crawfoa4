@@ -4,7 +4,6 @@ import static com.tester.notes.utils.Constants.API_BASE_URL;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.app.LauncherActivity;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -369,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
                 UserApiCalls client = retrofit.create(UserApiCalls.class);
                 Call<List<String>> call = client.getCollaborators(repo.getName(), repo.getFull_name());
                 call.enqueue(new Callback<>() {
+                    @SuppressLint("NotifyDataSetChanged")
                     @Override
                     public void onResponse(@NonNull Call<List<String>> call, @NonNull Response<List<String>> response) {
                         if (response.body() != null) {

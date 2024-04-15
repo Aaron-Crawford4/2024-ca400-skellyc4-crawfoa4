@@ -29,7 +29,6 @@ import retrofit2.Retrofit;
 public class ViewNote extends AppCompatActivity {
     private Note note;
     private Repository repo;
-    private TextView textDateTime, textNoteText;
     private String sha;
     private String decodedText;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -40,8 +39,8 @@ public class ViewNote extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_note);
 
-        textNoteText = findViewById(R.id.textNoteText);
-        textDateTime = findViewById(R.id.textDateTime);
+        TextView textNoteContent = findViewById(R.id.textNoteContent);
+        TextView textDateTime = findViewById(R.id.textDateTime);
 
         Intent previousIntent = getIntent();
 
@@ -51,7 +50,7 @@ public class ViewNote extends AppCompatActivity {
 
         byte[] decodedBytes = Base64.getDecoder().decode(note.getContent());
         decodedText = new String(decodedBytes);
-        textNoteText.setText(decodedText);
+        textNoteContent.setText(decodedText);
 
         textDateTime.setText(note.getDateCreated() + " " + note.getTimeCreated());
 

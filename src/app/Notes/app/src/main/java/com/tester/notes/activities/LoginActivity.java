@@ -31,6 +31,14 @@ import retrofit2.Retrofit;
 public class LoginActivity extends AppCompatActivity {
     private EditText inputEmail, inputPassword;
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
+    private final ActivityResultLauncher<Intent> loginLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    Log.d( "Activity Result Logging", "Successfully launched Activity");
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +88,4 @@ public class LoginActivity extends AppCompatActivity {
         }
         executorService.execute(new LoginTask());
     }
-    private final ActivityResultLauncher<Intent> loginLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    Log.d( "Activity Result Logging", "Successfully launched Activity");
-                }
-            }
-    );
 }

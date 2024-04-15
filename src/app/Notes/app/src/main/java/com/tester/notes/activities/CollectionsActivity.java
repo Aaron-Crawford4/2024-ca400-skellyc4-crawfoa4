@@ -44,10 +44,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class CollectionsActivity extends AppCompatActivity implements RepoListener {
-    private RecyclerView repoRecyclerView;
     private List<Repository> repoList, allRepos, ownedRepos, sharedRepos;
     private RepoAdapter repoAdapter;
-    private ImageView imageAddCollection, imageNoFilter;
+    private ImageView imageNoFilter;
     private TextView textOwnedFilter, textSharedFilter;
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
     private Dialog createRepoDialog;
@@ -67,13 +66,17 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_collections);
 
-        imageAddCollection = findViewById(R.id.imageAddCollection);
-        repoRecyclerView = findViewById(R.id.repoRecyclerView);
+        ImageView imageAddCollection = findViewById(R.id.imageAddCollection);
+        RecyclerView repoRecyclerView = findViewById(R.id.repoRecyclerView);
         repoRecyclerView.setLayoutManager(
                 new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
         );
 
         repoList = new ArrayList<>();
+        allRepos = new ArrayList<>();
+        ownedRepos = new ArrayList<>();
+        sharedRepos = new ArrayList<>();
+
         repoAdapter = new RepoAdapter(repoList, this);
         repoRecyclerView.setAdapter(repoAdapter);
 
@@ -142,12 +145,13 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                 UserApiCalls client = retrofit.create(UserApiCalls.class);
                 Call<List<List<Repository>>> call = client.view("repo", "");
                 call.enqueue(new Callback<>() {
+                    @SuppressLint("NotifyDataSetChanged")
                     @Override
                     public void onResponse(@NonNull Call<List<List<Repository>>> call, @NonNull Response<List<List<Repository>>> response) {
                         if (response.body() != null) {
-                            allRepos = response.body().get(0);
-                            ownedRepos = response.body().get(1);
-                            sharedRepos = response.body().get(2);
+                            allRepos.addAll(response.body().get(0));
+                            ownedRepos.addAll(response.body().get(1));
+                            sharedRepos.addAll(response.body().get(2));
                             repoList.addAll(allRepos);
                             runOnUiThread(()-> repoAdapter.notifyDataSetChanged());
                         }
@@ -185,10 +189,12 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                     call.enqueue(new Callback<>() {
                         @Override
                         public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                            Toast.makeText(CollectionsActivity.this, "Created new collection!", Toast.LENGTH_SHORT).show();
-                            runOnUiThread(()-> createRepoDialog.dismiss());
-                            repoList.clear();
-                            getRepos();
+                            if (response.isSuccessful()) {
+                                Toast.makeText(CollectionsActivity.this, "Created new collection!", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() -> createRepoDialog.dismiss());
+                                repoList.clear();
+                                getRepos();
+                            }else Toast.makeText(CollectionsActivity.this, "Failed to create new collection!", Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
