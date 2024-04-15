@@ -11,6 +11,7 @@ image: eclipse-temurin:17-jdk-jammy
 
 variables:
 
+  DJANGO_SETTINGS_MODULE: "GitMD.settings"
   # ANDROID_COMPILE_SDK is the version of Android you're compiling with.
   # It should match compileSdkVersion.
   ANDROID_COMPILE_SDK: "33"
@@ -87,3 +88,21 @@ debugTests:
   stage: test
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
+
+frontend_build:
+  stage: build
+  script:
+    - npm install
+    - pip install remark-gfm
+
+test:
+  stage: test
+  script:
+    - cd src/WebApp/GitMD
+    - python manage.py makemigrations --check --noinput
+    - python manage.py migrate
+    - python manage.py test
+    - cd frontend
+    - npm test
+  dependencies:
+    - build
