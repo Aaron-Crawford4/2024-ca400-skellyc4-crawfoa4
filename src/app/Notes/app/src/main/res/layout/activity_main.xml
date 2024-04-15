@@ -26,10 +26,15 @@
         android:layout_height="@dimen/_40sdp"
         android:layout_marginEnd="@dimen/_12sdp"
         app:thumbIcon="@drawable/ic_delete"
+        app:thumbIconTint="@color/colorAccent"
+        app:thumbTint="@color/colorWhite"
+        app:trackTint="@color/colorAccent"
+        app:trackDecoration="@null"
 
         app:layout_constraintBottom_toBottomOf="@+id/textMyNotes"
         app:layout_constraintEnd_toStartOf="@id/imageCollaborators"
         app:layout_constraintTop_toTopOf="@+id/textMyNotes"
+
         />
     <ImageView
         android:id="@+id/imageCollaborators"
