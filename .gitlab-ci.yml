@@ -6,6 +6,7 @@
 stages:
   - build
   - test
+  - deploy
 
 # Define variables
 variables:
