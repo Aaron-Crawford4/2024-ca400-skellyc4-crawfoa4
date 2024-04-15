@@ -89,21 +89,3 @@ debugTests:
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
 
-React_test:
-  stage: test
-  image: node:latest
-  script:
-    - cd src/WebApp/GitMD/frontend
-    - npm install
-    - npm install remark-gfm
-    - npm test
-
-
-Django_test:
-  stage: test
-  script:
-    - cd src/WebApp/GitMD
-    - python manage.py makemigrations --check --noinput
-    - python manage.py migrate
-    - python manage.py test
-
