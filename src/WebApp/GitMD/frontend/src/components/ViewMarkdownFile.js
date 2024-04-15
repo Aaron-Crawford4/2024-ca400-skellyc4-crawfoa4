@@ -406,13 +406,17 @@ export default class ViewMarkdownFile extends Component {
                                 return (
                                     <Grid item xs={12} key={index}>
                                         <div className="repo-container" onClick={() => this.handleRepoButtonClick(repo)}>
-                                            <ListItemButton component="p" variant="h6" className="repo-title">
+                                            <ListItemButton component="div" variant="h6" className="repo-title">
                                                 <ListItemIcon>
                                                     <FolderIcon />
                                                 </ListItemIcon>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                                    <div> {repo.name}</div>
-                                                    <div style={{ display: 'flex', alignItems: 'center' }}><Avatar sx={{ bgcolor: deepPurple[500], width: 24, height: 24,  marginRight: '8px' }}></Avatar> {repo.owner.login}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                                    <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        {repo.name}
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: '50%' }}>
+                                                        <Avatar sx={{ bgcolor: deepPurple[500], width: 24, height: 24, marginRight: '8px' }}></Avatar> {repo.owner.login}
+                                                    </div>
                                                     <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${repo.created_at.substring(8, 10)}-${repo.created_at.substring(5, 7)}-${repo.created_at.substring(0, 4)}`}</div>
                                                 </div>
                                             </ListItemButton>
