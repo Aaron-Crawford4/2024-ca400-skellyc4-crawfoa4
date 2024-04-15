@@ -3,9 +3,10 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-import Header from './Header';
 import ReactMarkdown from "react-markdown";
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import remarkGfm from 'remark-gfm';
 
 export default class EditMarkdownFile extends Component {
   constructor(props) {
@@ -83,8 +84,7 @@ export default class EditMarkdownFile extends Component {
 
   render() {
     return (
-      <div>
-        <Header />
+      <Box component="main" sx={{ flexGrow: 1, p: 8 }}>
         <div className="editor-container">
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <Button
@@ -96,10 +96,7 @@ export default class EditMarkdownFile extends Component {
             >
             Save
           </Button>
-          <Typography component="h4" variant="h4" textAlign={"center"} style={{ marginLeft: '38%' }}>
-            Edit Markdown File
-          </Typography>
-          </div>
+        </div>
           <TextField
             label="Title"
             variant="outlined"
@@ -129,24 +126,24 @@ export default class EditMarkdownFile extends Component {
               onChange={this.handleContentChange}
             />
             </Paper>
-            <Paper elevation={3} className="paper-container" style={{ padding: "20px 40px 20px 40px" }}>
+            <Paper elevation={3} className="paper-container" >
             <Typography 
               label="Markdown Content"
-              variant="outlined"
-              className="paper-container"
               multiline
               fullWidth
               style={{
                 overflowWrap: 'break-word',
                 maxWidth: '100%',
+                paddingLeft: "10px",
+                paddingRight: "10px",
               }}
               margin="normal">
-              <ReactMarkdown>{this.state.markdownContent}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}  children={this.state.markdownContent}></ReactMarkdown>
             </Typography>
             </Paper>
           </div>
         </div>
-      </div>
+      </Box>
     );
   }
 }

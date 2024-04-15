@@ -1,13 +1,18 @@
 import React, { Component } from "react";
 import Typography from "@mui/material/Typography";
-import Header from './Header';
 import ReactMarkdown from "react-markdown";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import Paper from '@mui/material/Paper';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';
 import Modal from "react-modal";
+import Box from '@mui/material/Box';
+import RestoreIcon from '@mui/icons-material/Restore';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import Grid from "@mui/material/Grid";
+import { Divider } from "@mui/material";
+
 
 export default class IndivMarkdown extends Component {
   constructor(props) {
@@ -37,6 +42,7 @@ export default class IndivMarkdown extends Component {
           sha: data.sha,
           owner: (data.url).match(regex)[1]
         });
+        this.showPreviousVersions()
       })
       .catch((error) => {
         console.error("Error fetching markdown content:", error);
@@ -124,23 +130,14 @@ export default class IndivMarkdown extends Component {
     });
 }
 
-  openModal = () => {
-    this.setState({ isModalOpen: true });
-  };
-
-  closeModal = () => {
-    this.setState({ isModalOpen: false });
-  };
-
   showPreviousVersions = () => {
     this.loadFileCommits();
-    this.openModal();
   };
 
   loadPreviousCommit = (content) => {
     this.state.atobContent = atob(content);
     console.log(this.state.atobContent)
-    this.closeModal();
+    this.forceUpdate();
   };
 
   render() {
@@ -149,39 +146,9 @@ export default class IndivMarkdown extends Component {
     const { file } = this.props.match.params;
 
     return (
-      <div>
-        <Header />
+      <Box component="main" sx={{ flexGrow: 1, p: 8 }}>
         <div className="container">
-          <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <Button
-              variant="contained"
-              color="error"
-              component={Link}
-              to="/"
-              onClick={this.handleDelete}
-              style={{margin: '10px', marginBottom: '40px'}}
-            >
-              Delete File
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to={`/edit/${user}/${repo}/${file}`}
-              style={{margin: '10px', marginBottom: '40px'}}
-            >
-              Edit File
-            </Button>
-            <Button
-              variant="contained"
-              color="warning"
-              component={Link}
-              onClick={this.showPreviousVersions}
-              style={{margin: '10px', marginBottom: '40px'}}
-            >
-              View Previous Versions
-            </Button>
-            </div>
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
             <Paper elevation={3} className="paper-container">
               <Typography component="h3" variant="h3" className="editor-title">
                 {file.slice(0, -3)}
@@ -190,40 +157,44 @@ export default class IndivMarkdown extends Component {
                 <ReactMarkdown>{this.state.atobContent}</ReactMarkdown>
               </Typography>
             </Paper>
+            <ul style={{ listStyleType: 'none', padding: 0, marginLeft: '20px' }}>
+              <h1 style={{ textAlign: 'center' }}>Previous Versions of {file}</h1>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <div>File Version</div>
+              <div >Restore</div>
+              </div>
+              <Divider />
+              {this.state.commits.map((file, index) => (
+                <Grid item xs={12} key={index}>
+                    <div className="repo-container">
+                    <ListItemButton component="p" variant="h6" className="repo-title" onClick={ () => this.loadPreviousCommit(file[0])}>
+                        <ListItemIcon>
+                        <InsertDriveFileIcon />
+                        </ListItemIcon>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <div>User {file[1]} on the {file[2]} at {file[3]}</div>
+                        </div>
+                    </ListItemButton>
+                    <ListItemButton style={{ float: 'right' }} onClick={ () => this.handleSubmit(file[0])}>
+                        <RestoreIcon className="repo-delete-button" />
+                    </ListItemButton>
+                    </div>
+                    <Divider />
+                </Grid>
+              ))}
+              <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              to={`/edit/${user}/${repo}/${file}`}
+              style={{margin: '10px', marginBottom: '40px'}}
+            >
+              Edit File
+            </Button>
+            </ul>
+          </div>
         </div>
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          contentLabel="Repository Files Modal"
-          style={{
-            content: {
-              width: '50%',
-              margin: 'auto',
-            },
-          }}
-        >
-        <ul style={{ listStyleType: 'none', padding: 0 }}>
-          <h1 style={{textAlign: "center"}}>Previous Versions of {file}</h1>
-          {this.state.commits.map((file, index) => (
-            <li key={index}>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center',  margin: '10px 0px 10px 0px', padding: '10px 0px 10px 0px', width: '100%'}}>
-              <div className="fileList-button">
-              <Button onClick={ () => this.loadPreviousCommit(file[0])}>
-                Preview Previous Edit By User {file[1]} on the {file[2]} at {file[3]}
-              </Button>
-              </div>
-              <Button variant="contained" color="warning" onClick={ () => this.handleSubmit(file[0])}>
-                Restore To This Version
-              </Button>
-              </div>
-              </li>
-            ))}
-        </ul>
-        <Button variant="contained" color="primary" onClick={this.closeModal}>
-            Close
-        </Button>
-        </Modal>
-      </div>
+      </Box>
     );
   }
 }

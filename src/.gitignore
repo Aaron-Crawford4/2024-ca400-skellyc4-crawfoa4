@@ -320,6 +320,7 @@ media/
 db.sqlite3
 __pycache__/
 migrations/
+src/WebApp/GitMD/frontend/static/frontend/
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pythonvanilla,visualstudiocode,pydev,pycharm
