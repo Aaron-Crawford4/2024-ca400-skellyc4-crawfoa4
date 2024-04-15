@@ -8,7 +8,6 @@ import Paper from '@mui/material/Paper';
 import remarkGfm from 'remark-gfm';
 import Box from '@mui/material/Box';
 
-
 export default class CreateMarkdownFile extends Component {
   constructor(props) {
     super(props);
@@ -155,7 +154,7 @@ export default class CreateMarkdownFile extends Component {
                 paddingRight: "10px",
               }}
               margin="normal">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}  children={this.state.markdownContent}></ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}  children={this.state.markdownContent} ></ReactMarkdown>
             </Typography>
             </Paper>
           </div>
