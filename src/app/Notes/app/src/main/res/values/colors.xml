@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#F9FAFD</color>
+    <color name="colorPrimaryDark">#252525</color>
+    <color name="colorAccent">#007bff</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorSearchIcon">#DBDBDB</color>
+    <color name="colorTextHint">#7B7B7B</color>
+    <color name="colorIcons">#A4A4A4</color>
+    <color name="colorDefaultNoteColor">#ddd</color>
+    <color name="colorNoteDateTimeText">#FAFAFA</color>
+    <color name="colorDelete">#FF4842</color>
+    <color name="colorSearchBackground">#fff</color>
+</resources>
