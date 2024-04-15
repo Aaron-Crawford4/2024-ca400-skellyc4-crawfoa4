@@ -21,7 +21,7 @@ django_migrate:
   stage: build
   image: python:latest
   before_script:
-    - pip install django djangorestframework django-cors-headers
+    - pip install django djangorestframework django-cors-headers pyjwt
   script:
     - cd src/WebApp/GitMD
     - python manage.py makemigrations --check --noinput
@@ -31,7 +31,7 @@ django_test:
   stage: test
   image: python:latest
   before_script:
-    - pip install django djangorestframework django-cors-headers
+    - pip install django djangorestframework django-cors-headers pyjwt
   script:
     - cd src/WebApp/GitMD
     - python manage.py test
