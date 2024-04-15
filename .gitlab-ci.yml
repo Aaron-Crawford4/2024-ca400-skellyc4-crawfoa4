@@ -34,6 +34,8 @@ django_test:
     - pip install django djangorestframework django-cors-headers pyjwt requests
   script:
     - cd src/WebApp/GitMD
+    - python manage.py makemigrations -v 3
+    - python manage.py migrate -v 3
     - python manage.py test
 
 react_test:
