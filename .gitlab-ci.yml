@@ -94,9 +94,8 @@ React_test:
   image: node:latest
   script:
     - cd src/WebApp/GitMD/frontend
-    - apt-get update && apt-get install -y nodejs npm
     - npm install
-    - pip install remark-gfm
+    - npm install remark-gfm
     - npm test
 
 
