@@ -95,7 +95,7 @@ frontend_build:
     - npm install
     - pip install remark-gfm
 
-test:
+WebApp_test:
   stage: test
   script:
     - cd src/WebApp/GitMD
@@ -105,4 +105,4 @@ test:
     - cd frontend
     - npm test
   dependencies:
-    - build
+    - frontend_build
