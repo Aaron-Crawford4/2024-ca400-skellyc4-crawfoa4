@@ -94,7 +94,7 @@ debugTests:
 #  image: node:latest
 #  script:
 #    - pwd
-#    - cd ../../WebApp/Gitmd/frontend
+#    - cd ../../WebApp/GitMD/frontend
 #    - npm install
 #    - npm install remark-gfm
 #    - npm test
@@ -103,7 +103,7 @@ Django_test:
   stage: test
   script:
     - pwd
-    - cd ../../WebApp/Gitmd
+    - cd ../../WebApp/GitMD
     - python manage.py makemigrations --check --noinput
     - python manage.py migrate
     - python manage.py test
