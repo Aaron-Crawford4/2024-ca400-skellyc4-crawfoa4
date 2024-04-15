@@ -89,20 +89,22 @@ debugTests:
   script:
     - ./gradlew -Pci --console=plain :app:testDebug
 
-frontend_build:
-  stage: build
+React_test:
+  stage: test
+  image: node:latest
   script:
+    - cd src/WebApp/GitMD/frontend
+    - apt-get update && apt-get install -y nodejs npm
     - npm install
     - pip install remark-gfm
+    - npm test
 
-WebApp_test:
+
+Django_test:
   stage: test
   script:
     - cd src/WebApp/GitMD
     - python manage.py makemigrations --check --noinput
     - python manage.py migrate
     - python manage.py test
-    - cd frontend
-    - npm test
-  dependencies:
-    - frontend_build
+
