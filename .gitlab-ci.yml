@@ -1,8 +1,3 @@
-# This file is a template for a GitLab CI/CD pipeline.
-# Uncomment and edit it to fit your needs.
-# You can read more about GitLab CI/CD on https://docs.gitlab.com/ee/ci/README.html
-
-# Define stages for the pipeline
 stages:
   - build
   - test
@@ -25,6 +20,8 @@ build:
 django_migrate:
   stage: build
   image: python:latest
+  before_script:
+    - pip install django
   script:
     - cd src/WebApp/GitMD
     - python manage.py makemigrations --check --noinput
@@ -32,14 +29,16 @@ django_migrate:
 
 django_test:
   stage: test
-  image: node:latest
+  image: python:latest
+  before_script:
+    - pip install django
   script:
     - cd src/WebApp/GitMD
     - python manage.py test
 
 react_test:
   stage: test
-  image: python:latest
+  image: node:latest
   script:
     - cd src/WebApp/GitMD/frontend
     - npm test
