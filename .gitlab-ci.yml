@@ -28,6 +28,7 @@ variables:
 
 # Packages installation before running script
 before_script:
+  - cd src/app/Notes/
   - apt-get --quiet update --yes
   - apt-get --quiet install --yes wget unzip
 
