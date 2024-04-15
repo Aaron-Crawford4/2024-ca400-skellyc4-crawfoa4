@@ -93,6 +93,7 @@ React_test:
   stage: test
   image: node:latest
   script:
+    - pwd
     - cd ../../WebApp/Gitmd/frontend
     - npm install
     - npm install remark-gfm
@@ -101,6 +102,7 @@ React_test:
 Django_test:
   stage: test
   script:
+    - pwd
     - cd ..
     - python manage.py makemigrations --check --noinput
     - python manage.py migrate
