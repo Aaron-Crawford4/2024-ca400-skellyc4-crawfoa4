@@ -1,31 +1,8 @@
 stages:
-  - build
   - test
-  - deploy
 
-# Define variables
 variables:
   DJANGO_SETTINGS_MODULE: "GitMD.settings"
-
-# Define jobs for each stage
-build:
-  stage: build
-  image: node:latest
-  script:
-    - cd src/WebApp/GitMD/frontend
-    - npm install
-    - npm install remark-gfm
-    - npm run build
-
-django_migrate:
-  stage: build
-  image: python:latest
-  before_script:
-    - pip install django djangorestframework django-cors-headers pyjwt requests
-  script:
-    - cd src/WebApp/GitMD
-    - python manage.py makemigrations -v 3
-    - python manage.py migrate -v 3
 
 django_test:
   stage: test
@@ -46,8 +23,3 @@ react_test:
     - npm install
     - npm install remark-gfm
     - npm test
-
-deploy:
-  stage: deploy
-  script:
-    - echo "Deploying your application here..."
