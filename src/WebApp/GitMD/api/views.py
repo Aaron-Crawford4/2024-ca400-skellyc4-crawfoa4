@@ -74,9 +74,16 @@ class MarkdownFileView(APIView):
 
             dates = []
             with ThreadPoolExecutor(max_workers=5) as executor:
-                for data in executor.map(self.get_files, response.json(), [name] * len(name), [repoName] * len(repoName), [token] * len(token)):
-                    dates.append(data)
-            print(dates)
+                futures = []
+                for data in response.json():
+                    future = executor.submit(self.get_files, data, name, repoName, token)
+                    futures.append(future)
+
+                for future in futures:
+                    result = future.result()
+                    if result is not None:
+                        dates.append(result)
+            
             return Response(dates)
         
         elif(switch == "deletedFiles"):
@@ -92,9 +99,17 @@ class MarkdownFileView(APIView):
             removed_files_with_date = []
             removed_files = set()
             with ThreadPoolExecutor(max_workers=5) as executor:
-                for data in executor.map(self.get_deleted_files, response.json(), [removed_files]):
-                    removed_files_with_date.append(data)
-                    removed_files.add(data[0])
+                futures = []
+                for data in response.json():
+                    future = executor.submit(self.get_deleted_files, data, [removed_files])
+                    futures.append(future)
+
+                for future in futures:
+                    result = future.result()
+                    if result is not None:
+                        removed_files_with_date.append(result)
+                        removed_files.add(result[0])
+
             print(removed_files_with_date)
             return Response(removed_files_with_date)
         
@@ -108,6 +123,7 @@ class MarkdownFileView(APIView):
         return [data["name"], response2.json()[-1]["created"]]
     
     def get_deleted_files(self, data, removed_files):
+        print(data)
         date = data["created"]
         for file_data in data["files"]:
             if file_data["status"] == "removed" and file_data["filename"] not in removed_files:
