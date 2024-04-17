@@ -2,7 +2,8 @@ import React from 'react';
 import { render, fireEvent, screen, act, waitFor } from '@testing-library/react';
 import CreateMarkdownFile from '../CreateMarkdownFile';
 import fetchMock from 'jest-fetch-mock';
-import mockRepoData from '../mockRepoData';
+import mockCreateFileData from '../mockCreateFileData';
+import { ConstructionOutlined } from '@mui/icons-material';
 fetchMock.enableMocks();
 
 jest.mock("react-markdown", () => (props) => {
@@ -18,6 +19,10 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('node-fetch');
+
+global.fetch.mockResolvedValueOnce({
+    json: () => Promise.resolve(mockCreateFileData),
+  });
 
 describe('CreateMarkdownFile component', () => {
     it('creating a file', async () => {
@@ -47,9 +52,12 @@ describe('CreateMarkdownFile component', () => {
         expect(screen.queryByText('contentcontent', { selector: 'textarea' })).toBeInTheDocument();
     });
 
-    //fireEvent.click(submitButton);
+    fireEvent.click(submitButton);
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
 
-    screen.debug()
+    //screen.debug()
       
     });  
 

@@ -143,11 +143,20 @@ export default class ViewMarkdownFile extends Component {
                 collaborator: this.state.users[index],
             }),
         })
-        .then((response) => {
-            window.location.reload();
-          })
+        .then(async (response) => {
+            try {
+                if (!response.ok) {
+                    throw new Error("Failed to remove collaborator: " + response.statusText);
+                }
+                this.setState(prevState => ({
+                    users: prevState.users.filter((user, idx) => idx !== index)
+                }));
+            } catch (error) {
+                console.error("Error removing collaborator:", error);
+            }
+        })
         .catch((error) => {
-          console.error("Error removing collaborator", error);
+            console.error("Error removing collaborator:", error);
         });
     }
 
@@ -209,11 +218,21 @@ export default class ViewMarkdownFile extends Component {
                 addedUser: this.state.Collaborator
             }),
         })
-        .then(() => {
-            window.location.reload();
+        .then(async (response) => {
+            try {
+                if (response.ok) {
+                    this.setState(prevState => ({
+                        users: [...prevState.users, this.state.Collaborator]
+                    }));
+                } else {
+                    console.error("Error adding collaborator:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error adding collaborator:", error);
+            }
         })
         .catch((error) => {
-          console.error("Error adding collaborator:", error);
+            console.error("Error adding collaborator:", error);
         });
     }
 
@@ -239,7 +258,6 @@ export default class ViewMarkdownFile extends Component {
     }
 
     sortFiles = (fileArray) => {
-        //console.log("fileArray type:", typeof fileArray);
         if(fileArray.length != 0){
             switch (this.state.sortBy) {
                 case 'alphabetically':
@@ -281,12 +299,12 @@ export default class ViewMarkdownFile extends Component {
         this.setState({repositoryName : ""})
     }
 
-    handleRepoButtonClick = (repo) => {
+    handleRepoButtonClick = async (repo) => {
         this.setState({ selectedRepo: repo, repoUrl: repo.full_name, repositoryName: repo.name, RepoOrFile: 1 });
-        this.loadRepoFiles(repo.name);
-        this.loadUsers(repo.name, repo.full_name);
-        this.loadDeletedFiles(repo.name);
-      };
+        await this.loadRepoFiles(repo.name);
+        await this.loadUsers(repo.name, repo.full_name);
+        await this.loadDeletedFiles(repo.name);
+    };
 
     handleRepoDeleteButtonClick = (repo) => {
         this.setState({ selectedRepo: repo, repoUrl: repo.full_name });
@@ -334,9 +352,6 @@ export default class ViewMarkdownFile extends Component {
             repoArray = this.state.repositories;
             title = 'Collections';
         }
-        // console.log(repoArray)
-        // console.log(fileArray)
-        // console.log(deletedFileArray)
         repoArray = this.sortRepos(repoArray)
         fileArray = (this.sortFiles(fileArray))
         deletedFileArray = (this.sortFiles(deletedFileArray))
@@ -403,6 +418,8 @@ export default class ViewMarkdownFile extends Component {
                         <Divider />
                         {repoArray.map((repo, index) => {
                             if (repo.name.includes(this.state.searchTerm)) {
+                                const marginRightValue = `calc(52% - ${repo.owner.login.length * 8}px)`;
+                                console.log(marginRightValue)
                                 return (
                                     <Grid item xs={12} key={index}>
                                         <div className="repo-container" onClick={() => this.handleRepoButtonClick(repo)}>
@@ -414,7 +431,7 @@ export default class ViewMarkdownFile extends Component {
                                                     <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                         {repo.name}
                                                     </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: '50%' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: marginRightValue  }}>
                                                         <Avatar sx={{ bgcolor: deepPurple[500], width: 24, height: 24, marginRight: '8px' }}></Avatar> {repo.owner.login}
                                                     </div>
                                                     <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${repo.created_at.substring(8, 10)}-${repo.created_at.substring(5, 7)}-${repo.created_at.substring(0, 4)}`}</div>

@@ -23,6 +23,7 @@ from django.utils.html import strip_tags
 # Create your views here. 
 
 BASE_URL = "http://gitea.gitmd.ie:80/api/v1"
+admintoken = 'token 9812c3c5008c1da5927f7ef20b45535116a8ee87'
 
 class MarkdownFileView(APIView):
 
@@ -72,7 +73,7 @@ class MarkdownFileView(APIView):
                 }
                 response = requests.get(url, json=data, headers=headers)
 
-            dates = []
+            fileAndDates = []
             with ThreadPoolExecutor(max_workers=5) as executor:
                 futures = []
                 for data in response.json():
@@ -82,9 +83,9 @@ class MarkdownFileView(APIView):
                 for future in futures:
                     result = future.result()
                     if result is not None:
-                        dates.append(result)
+                        fileAndDates.append(result)
             
-            return Response(dates)
+            return Response(fileAndDates)
         
         elif(switch == "deletedFiles"):
             name = GiteaAPIUtils.make_owner_search_request(repoName, token)
@@ -172,6 +173,7 @@ class MarkdownFileCreate(APIView):
             }
             response = requests.post(url, json=data, headers=headers)
             if response.status_code == 201:
+                print(response.json())
                 return Response(response.json(), status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': 'Failed to create user file'}, status=response.status_code)
@@ -316,6 +318,7 @@ class GetPreviousVersions(APIView):
                 return Response({'error': 'Failed to get previous commits content'}, status=response.status_code)
             commit[0] = response.json()["content"]
 
+        print(Commitlist)
         return Response(Commitlist, status=status.HTTP_200_OK)
 
 
@@ -479,7 +482,7 @@ class Register(APIView):
 
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'token 9812c3c5008c1da5927f7ef20b45535116a8ee87'
+            'Authorization': admintoken 
         }
 
         data = {
@@ -509,6 +512,7 @@ class Register(APIView):
         user = User.objects.get(name=name)
         user.token = response.json().get('sha1')
         user.save()
+
         subject = "Account Creation"
         messageHTML = f"""
             <html>
@@ -550,7 +554,7 @@ class Login(APIView):
         
         payload = {
             'id':user.id,
-            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=120),
+            'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=480),
             'iat':datetime.datetime.utcnow()
         }
 
