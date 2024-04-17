@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+    <group
+        android:id="@+id/groupCollectionFilters">
+        <item
+            android:id="@+id/nav_Home"
+            android:title="Home"
+            android:checked="true"/>
+        <item
+            android:id="@+id/nav_Owned"
+            android:title="Owned" />
+        <item
+            android:id="@+id/nav_Shared"
+            android:title="Shared" />
+    </group>
+    <item
+        android:id="@+id/nav_Logout"
+        android:title="Logout"/>
+</menu>

@@ -8,15 +8,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import android.app.Dialog;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.google.android.material.navigation.NavigationView;
 import com.tester.notes.R;
 import com.tester.notes.activities.CollectionsActivity;
 import com.tester.notes.adapters.RepoAdapter;
@@ -83,28 +86,46 @@ public class CollectionActivityTests {
         assertFalse(dialog.isShowing());
     }
     @Test
-    public void filterButtonTests(){
-        ImageView imageNoFilter = activity.findViewById(R.id.imageNoFilter);
-        TextView textSharedFilter = activity.findViewById(R.id.textSharedFilter);
-        TextView textOwnedFilter = activity.findViewById(R.id.textOwnedFilter);
-        assertEquals(View.VISIBLE, imageNoFilter.getVisibility());
-        assertEquals(View.GONE, textOwnedFilter.getVisibility());
-        assertEquals(View.GONE, textSharedFilter.getVisibility());
+    public void NavbarTests(){
+        ImageView imageDrawerToggle = activity.findViewById(R.id.imageDrawerToggle);
+        NavigationView navMenu = activity.findViewById(R.id.navMenu);
+        DrawerLayout drawerLayout = activity.findViewById(R.id.drawer_layout);
 
-        imageNoFilter.performClick();
-        assertEquals(View.GONE, imageNoFilter.getVisibility());
-        assertEquals(View.VISIBLE, textOwnedFilter.getVisibility());
-        assertEquals(View.GONE, textSharedFilter.getVisibility());
+        // Nav drawer is closed by default
+        assertFalse(drawerLayout.isDrawerOpen(GravityCompat.START));
 
-        textOwnedFilter.performClick();
-        assertEquals(View.GONE, imageNoFilter.getVisibility());
-        assertEquals(View.GONE, textOwnedFilter.getVisibility());
-        assertEquals(View.VISIBLE, textSharedFilter.getVisibility());
+        // clicking the menu toggle opens the nav drawer
+        imageDrawerToggle.performClick();
+        assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START));
 
-        textSharedFilter.performClick();
-        assertEquals(View.VISIBLE, imageNoFilter.getVisibility());
-        assertEquals(View.GONE, textOwnedFilter.getVisibility());
-        assertEquals(View.GONE, textSharedFilter.getVisibility());
+        // The nav menu displays the correct items
+        assertEquals(R.id.nav_Home, navMenu.getMenu().getItem(0).getItemId());
+        assertEquals(R.id.nav_Owned, navMenu.getMenu().getItem(1).getItemId());
+        assertEquals(R.id.nav_Shared, navMenu.getMenu().getItem(2).getItemId());
+        assertEquals(R.id.nav_Logout, navMenu.getMenu().getItem(3).getItemId());
+
+        MenuItem nav_Home = navMenu.getMenu().getItem(0);
+        MenuItem nav_Owned = navMenu.getMenu().getItem(1);
+        MenuItem nav_Shared = navMenu.getMenu().getItem(2);
+        MenuItem nav_Logout = navMenu.getMenu().getItem(3);
+
+        // Only home is checked by default, because we show all collections
+        assertTrue(nav_Home.isChecked());
+        assertFalse(nav_Owned.isChecked());
+        assertFalse(nav_Shared.isChecked());
+        assertFalse(nav_Logout.isChecked());
+
+        // clicking on "Owned" changes the checked item to "Owned" and unchecks everything else
+        activity.findViewById(R.id.nav_Owned).performClick();
+
+        assertFalse(nav_Home.isChecked());
+        assertTrue(nav_Owned.isChecked());
+        assertFalse(nav_Shared.isChecked());
+        assertFalse(nav_Logout.isChecked());
+
+        // clicking Logout finishes the CollectionsActivity and returns to the login page
+        activity.findViewById(R.id.nav_Logout).performClick();
+        assertTrue(activity.isFinishing());
     }
     @Test
     public void repoRecyclerViewTests(){
