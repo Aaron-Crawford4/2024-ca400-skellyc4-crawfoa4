@@ -10,15 +10,19 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.navigation.NavigationView;
 import com.tester.notes.R;
 import com.tester.notes.activities.CreateNoteActivity;
 import com.tester.notes.activities.MainActivity;
@@ -138,5 +142,48 @@ public class MainActivityTests {
         buttonCancel.performClick();
         ShadowLooper.runUiThreadTasks();
         assertFalse(dialog.isShowing());
+    }
+    @Test
+    public void NavbarTests(){
+        ImageView imageDrawerToggle = activity.findViewById(R.id.imageDrawerToggle);
+        NavigationView navMenu = activity.findViewById(R.id.navMenu);
+        DrawerLayout drawerLayout = activity.findViewById(R.id.drawer_layout);
+
+        // Nav drawer is closed by default
+        assertFalse(drawerLayout.isDrawerOpen(GravityCompat.START));
+
+        // clicking the menu toggle opens the nav drawer
+        imageDrawerToggle.performClick();
+        assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START));
+
+        // The nav menu displays the correct items
+        assertEquals(R.id.nav_Home, navMenu.getMenu().getItem(0).getItemId());
+        assertEquals(R.id.nav_Owned, navMenu.getMenu().getItem(1).getItemId());
+        assertEquals(R.id.nav_Shared, navMenu.getMenu().getItem(2).getItemId());
+        assertEquals(R.id.nav_Logout, navMenu.getMenu().getItem(3).getItemId());
+
+        MenuItem nav_Home = navMenu.getMenu().getItem(0);
+        MenuItem nav_Owned = navMenu.getMenu().getItem(1);
+        MenuItem nav_Shared = navMenu.getMenu().getItem(2);
+        MenuItem nav_Logout = navMenu.getMenu().getItem(3);
+
+        // Only home is checked by default
+        assertTrue(nav_Home.isChecked());
+        assertFalse(nav_Owned.isChecked());
+        assertFalse(nav_Shared.isChecked());
+        assertFalse(nav_Logout.isChecked());
+
+        // clicking on "Owned" changes the checked item to "Owned" and unchecks everything else
+        activity.findViewById(R.id.nav_Owned).performClick();
+
+        assertFalse(nav_Home.isChecked());
+        assertTrue(nav_Owned.isChecked());
+        assertFalse(nav_Shared.isChecked());
+        assertFalse(nav_Logout.isChecked());
+        assertTrue(activity.isFinishing());
+
+        // clicking Logout finishes the MainActivity
+        activity.findViewById(R.id.nav_Logout).performClick();
+        assertTrue(activity.isFinishing());
     }
 }
