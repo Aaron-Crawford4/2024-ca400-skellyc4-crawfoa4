@@ -36,9 +36,6 @@
             android:name=".activities.CollectionsActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.MarkdownPreviewActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.CreateNoteActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
