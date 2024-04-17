@@ -17,7 +17,8 @@ public interface UserApiCalls {
     @FormUrlEncoded
     @POST("/api/login")
     Call<User> login(@Field("email") String email, @Field("password") String password);
-
+    @POST("/api/logout")
+    Call<Void> logout();
     @POST("/api/register")
     Call<Void> register(@Body RegisteringUser user);
     @FormUrlEncoded

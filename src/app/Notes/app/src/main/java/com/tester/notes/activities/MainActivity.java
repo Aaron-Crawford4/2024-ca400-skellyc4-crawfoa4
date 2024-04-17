@@ -6,11 +6,13 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -22,10 +24,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.navigation.NavigationView;
 import com.tester.notes.R;
 import com.tester.notes.adapters.DeletedNotesAdapter;
 import com.tester.notes.adapters.NotesAdapter;
@@ -40,6 +45,7 @@ import com.tester.notes.listeners.NotesListener;
 import com.tester.notes.rest.UserApiCalls;
 import com.tester.notes.retrofit.RetrofitClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -62,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
     private int noteClickedPosition = -1;
     private static Repository repo;
     private Dialog createUserDialog;
+    public DrawerLayout drawerLayout;
+
     enum RequestType {
         ADD,
         UPDATE,
@@ -141,6 +149,62 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
                 notesRecyclerView.setVisibility(View.VISIBLE);
                 deletedNotesRecyclerView.setVisibility(View.GONE);
             }
+        });
+        setupDrawer();
+    }
+    private void updateNavigation(int itemId) {
+        if (itemId == R.id.nav_Logout) {
+            logout();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }else {
+            Intent intent = new Intent();
+            intent.putExtra("navigationPressed", true);
+            intent.putExtra("menuItemId", itemId);
+            setResult(RESULT_OK, intent);
+            finish();
+        }
+    }
+
+    private void logout() {
+        class LogoutTask implements Runnable{
+
+            @Override
+            public void run() {
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
+                UserApiCalls client = retrofit.create(UserApiCalls.class);
+                Call<Void> call = client.logout();
+                try {
+                    call.execute();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        executorService.execute(new LogoutTask());
+    }
+
+    private void setupDrawer() {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        ImageView imageDrawerToggle = findViewById(R.id.imageDrawerToggle);
+        imageDrawerToggle.setOnClickListener(view -> drawerLayout.openDrawer(GravityCompat.START));
+
+        NavigationView navView = drawerLayout.findViewById(R.id.navMenu);
+        navView.bringToFront();
+
+        Menu navMenu = navView.getMenu();
+        navMenu.setGroupCheckable(R.id.groupCollectionFilters, true, true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            navMenu.setGroupDividerEnabled(true);
+        }
+
+        navView.setCheckedItem(getIntent().getIntExtra("menuState", R.id.nav_Home));
+
+        navView.setNavigationItemSelectedListener(item -> {
+            item.setChecked(true);
+            updateNavigation(item.getItemId());
+            return true;
         });
     }
     public static Repository getRepoDetails(){
