@@ -179,7 +179,7 @@ export default class Login extends Component {
     const { name, email, password, password2, resetToken, isAuthenticated, isRegistering, error } = this.state;
 
     if (isAuthenticated) {
-      return <Redirect to="/" />;
+      window.location.href = '/';
     }
 
     return (
