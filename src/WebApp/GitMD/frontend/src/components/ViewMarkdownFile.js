@@ -44,6 +44,7 @@ export default class ViewMarkdownFile extends Component {
             deletedFiles: [],
             sortBy: 'alphabetically',
             searchTerm: '',
+            HTTPorSSHString: ''
         };
     }
 
@@ -61,7 +62,7 @@ export default class ViewMarkdownFile extends Component {
         })
         .then((response) => response.json())
         .then((data) => {
-          this.setState({ FileDate: data });
+          this.setState({ FileDate: data, HTTPorSSHString: "http://gitmd.ie/" + this.state.owner + "/" +  this.state.selectedRepo.name + ".git" });
         })
         .catch((error) => {
           console.error("Error fetching repository files:", error);
@@ -318,7 +319,8 @@ export default class ViewMarkdownFile extends Component {
 
     handleHTTPorSSHChange = () => {
         this.setState(prevState => ({
-            HTTPorSSH: prevState.HTTPorSSH === "HTTP" ? "SSH" : "HTTP"
+            HTTPorSSH: prevState.HTTPorSSH === "HTTP" ? "SSH" : "HTTP",
+            HTTPorSSHString: prevState.HTTPorSSHString === "http://gitmd.ie/" + this.state.owner + "/" +  this.state.selectedRepo.name + ".git" ? "GitMD@gitea.gitmd.ie:" + this.state.owner + "/" +  this.state.selectedRepo.name + ".git" : "http://gitmd.ie/" + this.state.owner + "/" +  this.state.selectedRepo.name + ".git"
         }));
       };
     
@@ -463,7 +465,7 @@ export default class ViewMarkdownFile extends Component {
                                         variant="outlined"
                                         style={{ width: '32vw', marginLeft: '8px' }}
                                         margin="normal"
-                                        value={this.state.HTTPorSSH}
+                                        value={this.state.HTTPorSSHString}
                                         readOnly
                                     />
                                 </div>
