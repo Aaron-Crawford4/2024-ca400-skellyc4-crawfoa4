@@ -18,6 +18,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="33">
         <activity
+            android:name=".activities.PasswordResetActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RequestResetTokenActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.ViewNote"
             android:exported="false" />
         <activity
@@ -25,13 +31,13 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activities.RegisterActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false" />
         <activity
             android:name=".activities.CollectionsActivity"
             android:exported="false" />
@@ -42,7 +48,7 @@
         <activity
             android:name=".activities.MainActivity"
             android:exported="false"
-            android:windowSoftInputMode="stateHidden"/>
+            android:windowSoftInputMode="stateHidden" />
     </application>
 
 </manifest>

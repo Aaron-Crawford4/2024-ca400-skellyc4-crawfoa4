@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tester.notes.R;
@@ -55,6 +56,8 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(view.getContext(), RegisterActivity.class);
             loginLauncher.launch(intent);
         });
+        TextView textForgotPassword = findViewById(R.id.textForgotPassword);
+        textForgotPassword.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), RequestResetTokenActivity.class)));
     }
     private void login(){
 

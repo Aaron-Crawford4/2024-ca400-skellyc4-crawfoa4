@@ -138,6 +138,7 @@ public class CreateNoteActivity extends AppCompatActivity implements NotesListen
     }
 
     private void showMarkdown() {
+        hideKeyboard(this);
         TextView markdownNoteContent = findViewById(R.id.markdownNoteContent);
         if (showingMarkdown){
             showingMarkdown = false;

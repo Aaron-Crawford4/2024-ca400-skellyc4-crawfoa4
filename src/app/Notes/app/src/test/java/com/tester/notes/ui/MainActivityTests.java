@@ -25,6 +25,7 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.navigation.NavigationView;
 import com.tester.notes.R;
 import com.tester.notes.activities.CreateNoteActivity;
+import com.tester.notes.activities.LoginActivity;
 import com.tester.notes.activities.MainActivity;
 import com.tester.notes.adapters.NotesAdapter;
 import com.tester.notes.adapters.UserAdapter;
@@ -173,7 +174,8 @@ public class MainActivityTests {
         assertFalse(nav_Shared.isChecked());
         assertFalse(nav_Logout.isChecked());
 
-        // clicking on "Owned" changes the checked item to "Owned" and unchecks everything else
+        // clicking on "Owned" changes the checked item to "Owned", unchecks everything else
+        // And finishes the MainActivity
         activity.findViewById(R.id.nav_Owned).performClick();
 
         assertFalse(nav_Home.isChecked());
@@ -182,8 +184,15 @@ public class MainActivityTests {
         assertFalse(nav_Logout.isChecked());
         assertTrue(activity.isFinishing());
 
-        // clicking Logout finishes the MainActivity
-        activity.findViewById(R.id.nav_Logout).performClick();
-        assertTrue(activity.isFinishing());
+        // clicking Logout finishes the MainActivity and returns to the login page
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class)){
+            controller.setup();
+            activity = controller.get();
+
+            activity.findViewById(R.id.nav_Logout).performClick();
+            Intent expectedIntent = new Intent(activity, LoginActivity.class);
+            Intent actual = shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
+            assertEquals(expectedIntent.getComponent(), actual.getComponent());
+        }
     }
 }

@@ -33,4 +33,11 @@ public interface UserApiCalls {
     @FormUrlEncoded
     @PUT("/api/addUserToRepo")
     Call<Void> addCollaborator(@Field("repo") String repo, @Field("repoFullName") String repoFullName, @Field("addedUser") String addedUser);
+    @FormUrlEncoded
+    @PUT("/api/passwordReset")
+    Call<Void> getResetToken(@Field("email") String email, @Field("type") String type);
+
+    @FormUrlEncoded
+    @PUT("/api/passwordReset")
+    Call<Void> resetPassword(@Field("email") String email, @Field("type") String type, @Field("resetToken") String resetToken, @Field("newPassword") String newPassword);
 }
