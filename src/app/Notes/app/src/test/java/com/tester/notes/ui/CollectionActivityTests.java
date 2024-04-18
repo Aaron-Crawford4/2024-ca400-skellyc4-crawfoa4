@@ -6,8 +6,10 @@ import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +24,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.google.android.material.navigation.NavigationView;
 import com.tester.notes.R;
 import com.tester.notes.activities.CollectionsActivity;
+import com.tester.notes.activities.LoginActivity;
 import com.tester.notes.adapters.RepoAdapter;
 
 import org.junit.Before;
@@ -29,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowLooper;
@@ -124,8 +128,15 @@ public class CollectionActivityTests {
         assertFalse(nav_Logout.isChecked());
 
         // clicking Logout finishes the CollectionsActivity and returns to the login page
-        activity.findViewById(R.id.nav_Logout).performClick();
-        assertTrue(activity.isFinishing());
+        try (ActivityController<CollectionsActivity> controller = Robolectric.buildActivity(CollectionsActivity.class)){
+            controller.setup();
+            activity = controller.get();
+
+            activity.findViewById(R.id.nav_Logout).performClick();
+            Intent expectedIntent = new Intent(activity, LoginActivity.class);
+            Intent actual = shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
+            assertEquals(expectedIntent.getComponent(), actual.getComponent());
+        }
     }
     @Test
     public void repoRecyclerViewTests(){

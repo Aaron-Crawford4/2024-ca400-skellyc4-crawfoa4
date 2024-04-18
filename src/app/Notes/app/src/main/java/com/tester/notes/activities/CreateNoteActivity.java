@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
@@ -33,6 +34,7 @@ import com.tester.notes.listeners.NotesListener;
 import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.retrofit.RetrofitClient;
+import com.tester.notes.utils.markdownBuilder;
 
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
@@ -65,6 +67,9 @@ public class CreateNoteActivity extends AppCompatActivity implements NotesListen
     private Repository repo;
     private List<Note> prevFileVersions;
     private PrevVerNotesAdapter notesAdapter;
+    private boolean showingMarkdown = false;
+    private ImageView imagePreviewNote;
+    private Markwon markwon;
 
     private final ActivityResultLauncher<Intent> noteLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -96,14 +101,13 @@ public class CreateNoteActivity extends AppCompatActivity implements NotesListen
         inputNoteText = findViewById(R.id.inputNoteText);
         textDateTime = findViewById(R.id.textDateTime);
 
+        markwon = markdownBuilder.getMarkwon(getApplicationContext());
         setupMarkdownHighlighting();
 
-        ImageView imagePreviewNote = findViewById(R.id.imagePreview);
-        imagePreviewNote.setOnClickListener(view -> {
-            Intent intent = new Intent(view.getContext(), MarkdownPreviewActivity.class);
-            intent.putExtra("noteText", inputNoteText.getText().toString());
-            noteLauncher.launch(intent);
-        });
+        imagePreviewNote = findViewById(R.id.imagePreview);
+
+        imagePreviewNote.setOnClickListener(view -> showMarkdown());
+
 
         textDateTime.setText(
                 new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
@@ -121,16 +125,38 @@ public class CreateNoteActivity extends AppCompatActivity implements NotesListen
             getNoteContent(false);
         }
         if(existingNote != null){
-            inputNoteTitle.setInputType(InputType.TYPE_NULL);
-            findViewById(R.id.imageDeleteNote).setVisibility(View.VISIBLE);
-            findViewById(R.id.imageDeleteNote).setOnClickListener(view -> createDeleteDialog());
-            findViewById(R.id.imageFileHistory).setVisibility(View.VISIBLE);
-            findViewById(R.id.imageFileHistory).setOnClickListener(view -> createHistoryDialog());
+            setExistingNote();
+        }
+    }
+
+    private void setExistingNote() {
+        inputNoteTitle.setInputType(InputType.TYPE_NULL);
+        findViewById(R.id.imageDeleteNote).setVisibility(View.VISIBLE);
+        findViewById(R.id.imageDeleteNote).setOnClickListener(view -> createDeleteDialog());
+        findViewById(R.id.imageFileHistory).setVisibility(View.VISIBLE);
+        findViewById(R.id.imageFileHistory).setOnClickListener(view -> createHistoryDialog());
+    }
+
+    private void showMarkdown() {
+        hideKeyboard(this);
+        TextView markdownNoteContent = findViewById(R.id.markdownNoteContent);
+        if (showingMarkdown){
+            showingMarkdown = false;
+            imagePreviewNote.setImageTintList(ColorStateList.valueOf(getColor(R.color.colorIcons)));
+
+            markdownNoteContent.setVisibility(View.GONE);
+            inputNoteText.setVisibility(View.VISIBLE);
+        } else {
+            showingMarkdown = true;
+            imagePreviewNote.setImageTintList(ColorStateList.valueOf(getColor(R.color.colorAccent)));
+
+            markwon.setMarkdown(markdownNoteContent, inputNoteText.getText().toString());
+            inputNoteText.setVisibility(View.GONE);
+            markdownNoteContent.setVisibility(View.VISIBLE);
         }
     }
 
     private void setupMarkdownHighlighting() {
-        final Markwon markwon = Markwon.create(this);
         final MarkwonEditor editor = MarkwonEditor.create(markwon);
         inputNoteText.addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
                 editor,
