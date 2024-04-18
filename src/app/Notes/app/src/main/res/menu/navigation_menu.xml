@@ -7,15 +7,25 @@
         <item
             android:id="@+id/nav_Home"
             android:title="Home"
+            android:icon="@drawable/ic_home"
+            android:iconTint="@color/colorPrimaryDark"
             android:checked="true"/>
         <item
             android:id="@+id/nav_Owned"
-            android:title="Owned" />
+            android:title="My Collections"
+            android:icon="@drawable/ic_collection"
+            android:iconTint="@color/colorPrimaryDark"
+            />
         <item
             android:id="@+id/nav_Shared"
-            android:title="Shared" />
+            android:title="Shared With Me"
+            android:icon="@drawable/ic_shared_collection"
+            android:iconTint="@color/colorPrimaryDark"
+            />
     </group>
     <item
         android:id="@+id/nav_Logout"
-        android:title="Logout"/>
+        android:title="Sign Out"
+        android:icon="@drawable/ic_logout"
+        android:iconTint="@color/colorPrimaryDark"/>
 </menu>

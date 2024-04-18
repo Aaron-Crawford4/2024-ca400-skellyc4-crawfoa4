@@ -6,28 +6,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
 
-import android.content.Intent;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.test.core.app.ApplicationProvider;
-
 import com.tester.notes.R;
 import com.tester.notes.activities.CreateNoteActivity;
-import com.tester.notes.activities.MarkdownPreviewActivity;
-import com.tester.notes.entities.Note;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 
 
@@ -81,18 +74,22 @@ public class CreateNoteActivityTests {
     }
     @Test
     public void imagePreviewTests(){
-        Intent intent = new Intent(ApplicationProvider.getApplicationContext(), CreateNoteActivity.class);
-        intent.putExtra("isViewOrUpdate", true);
-        intent.putExtra("note", new Note("TesterNote", "2011-12-03T10:15:30+01:00"));
-        try (ActivityController<CreateNoteActivity> controller = Robolectric.buildActivity(CreateNoteActivity.class, intent)){
-            controller.setup();
-            activity = controller.get();
+        EditText inputNoteText = activity.findViewById(R.id.inputNoteText);
+        TextView markdownNoteContent = activity.findViewById(R.id.markdownNoteContent);
+        ImageView imagePreview = activity.findViewById(R.id.imagePreview);
 
-            activity.findViewById(R.id.imagePreview).performClick();
-            Intent expectedIntent = new Intent(activity, MarkdownPreviewActivity.class);
-            Intent actual = shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
-            assertEquals(expectedIntent.getComponent(), actual.getComponent());
-        }
+        assertEquals(View.VISIBLE, inputNoteText.getVisibility());
+        assertEquals(View.GONE, markdownNoteContent.getVisibility());
+
+        imagePreview.performClick();
+
+        assertEquals(View.GONE, inputNoteText.getVisibility());
+        assertEquals(View.VISIBLE, markdownNoteContent.getVisibility());
+
+        imagePreview.performClick();
+
+        assertEquals(View.VISIBLE, inputNoteText.getVisibility());
+        assertEquals(View.GONE, markdownNoteContent.getVisibility());
     }
     @Test
     public void imageBackTests(){
