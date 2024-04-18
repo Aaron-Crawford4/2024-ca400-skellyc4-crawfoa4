@@ -149,13 +149,13 @@ const Header = () => {
         </List>
         <Divider />
         <List>
-          {['Sign Out', 'Help'].map((text, index) => (
+          {['Sign Out', 'Markdown Help'].map((text, index) => (
             <ListItem key={text} disablePadding>
               <ListItemButton onClick={() => to = getLinkForIndex(index + 3)}>
                 <ListItemIcon>
                   {index % 2 === 0 ? <LogoutIcon /> : <HelpIcon />}
                 </ListItemIcon>
-                <ListItemText primary={index === 1 ? 'Help' : isLoggedIn ? 'Sign Out' : 'Sign In'} />
+                <ListItemText primary={index === 1 ? 'Markdown Help' : isLoggedIn ? 'Sign Out' : 'Sign In'} />
               </ListItemButton>
             </ListItem>
           ))}

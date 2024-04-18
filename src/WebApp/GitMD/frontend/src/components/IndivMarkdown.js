@@ -46,34 +46,14 @@ export default class IndivMarkdown extends Component {
       })
       .catch((error) => {
         console.error("Error fetching markdown content:", error);
+        try{
+          this.showPreviousVersions()
+        }
+        finally {
+          console.error("Error fetching markdown commits:", error);
+        }
       });
   }
-
-  handleDelete = () => {
-    const { user } = this.props.match.params;
-    const { repo } = this.props.match.params;
-    const { file } = this.props.match.params;
-
-    fetch("/api/delete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        file: file,
-        repo: repo,
-        user: user,
-        sha: this.state.sha,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("File deleted successfully:", data);
-      })
-      .catch((error) => {
-        console.error("Error deleting file:", error);
-      });
-  };
 
   handleSubmit = (content) => {
     

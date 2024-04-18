@@ -3,6 +3,9 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 
+BASE_URL = "http://gitea.gitmd.ie:80/api/v1"
+admintoken = 'token 9812c3c5008c1da5927f7ef20b45535116a8ee87'
+
 class RegisterTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -13,9 +16,9 @@ class RegisterTestCase(TestCase):
             self.delete_user_on_gitea(user)
 
     def delete_user_on_gitea(self, user):
-        url = f"http://gitea.gitmd.ie:80/api/v1/admin/users/{user.name}"
+        url = f"{BASE_URL}/admin/users/{user.name}"
         headers = {
-            'Authorization': f'token 9812c3c5008c1da5927f7ef20b45535116a8ee87',
+            'Authorization': admintoken,
         }
         response = requests.delete(url, headers=headers)
         if response.status_code != 204:
@@ -27,6 +30,8 @@ class RegisterTestCase(TestCase):
             'email': 'John_Doe@example.com',
             'password': 'test_password'
         }
+        self.email = 'John_Doe@example.com'
+        self.name ='John_Doe'
 
         response = self.client.post("/api/register", data=data, format="json")
 
@@ -59,9 +64,9 @@ class UserTestCase(TestCase):
             self.delete_user_on_gitea(user)
 
     def delete_user_on_gitea(self, user):
-        url = f"http://gitea.gitmd.ie:80/api/v1/admin/users/{user.name}"
+        url = f"{BASE_URL}/admin/users/{user.name}"
         headers = {
-            'Authorization': f'token 9812c3c5008c1da5927f7ef20b45535116a8ee87',
+            'Authorization': admintoken,
         }
         response = requests.delete(url, headers=headers)
         if response.status_code != 204:
@@ -134,15 +139,15 @@ class CreateTestCase(TestCase):
             self.delete_user_on_gitea(user)
 
     def delete_user_on_gitea(self, user):
-        url = f"http://gitea.gitmd.ie:80/api/v1/admin/users/John_Doe2"
+        url = f"{BASE_URL}/admin/users/John_Doe2"
         headers = {
-            'Authorization': f'token 9812c3c5008c1da5927f7ef20b45535116a8ee87',
+            'Authorization': admintoken,
         }
         response = requests.delete(url, headers=headers)
         if response.status_code != 204:
             print(f"Failed to delete user John_Doe2 on Gitea: {response.text}")
 
-        url = f"http://gitea.gitmd.ie:80/api/v1/admin/users/John_Doe3"
+        url = f"{BASE_URL}/admin/users/John_Doe3"
         response = requests.delete(url, headers=headers)
         if response.status_code != 204:
             print(f"Failed to delete user John_Doe3 on Gitea: {response.text}")

@@ -50,7 +50,6 @@ describe('editMarkdownFile component', () => {
         expect(markdownContents2.length).toBe(2);
     });
 
-    const contentInput2 = screen.getByLabelText('Content', {exact:false});
     fireEvent.change(contentInput, { target: { value: '*bold* markdown test' } });
 
     await waitFor(() => {
