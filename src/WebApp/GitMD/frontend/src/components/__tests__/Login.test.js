@@ -31,19 +31,15 @@ describe('Login component', () => {
   it('fills in the sign-in form', () => {
     render(<Login />);
     expect(screen.getByText('Sign in')).toBeInTheDocument();
-    // Find input fields and submit button
     const emailInput = screen.getByLabelText('Email Address', {exact:false});
     const passwordInput = screen.getByLabelText('Password', {exact:false});
     const submitButton = screen.getByRole('button', { name: 'Log In' });
 
-    // Fill in the input fields
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    // Submit the form
     fireEvent.click(submitButton);
 
-    // Assert that the form is submitted correctly
     expect(emailInput).toHaveValue('test@example.com');
     expect(passwordInput).toHaveValue('password123');
   });
@@ -59,15 +55,12 @@ describe('Login component', () => {
     const passwordInput = screen.getByLabelText('Password', {exact:false});
     const submitButton = screen.getByRole('button', { name: 'Register' });
 
-    // Fill in the input fields
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(usernameInput, { target: { value: 'test' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    // Submit the form
     fireEvent.click(submitButton);
 
-    // Assert that the form is submitted correctly
     expect(emailInput).toHaveValue('test@example.com');
     expect(usernameInput).toHaveValue('test');
     expect(passwordInput).toHaveValue('password123');
@@ -78,27 +71,21 @@ describe('Login component', () => {
     fireEvent.click(screen.getByText('Forgot Password?'));
     expect(screen.getByText('Password Reset')).toBeInTheDocument();
 
-    // Mock API request
-    const fetchMockPromise = Promise.resolve({
-      json: () => Promise.resolve({ message: 'Email sent successfully' })
-    });
-    jest.spyOn(global, 'fetch').mockImplementation(() => fetchMockPromise);
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      json: () => Promise.resolve('Email sent successfully'),
+    })
 
     const emailInput = screen.getByLabelText('Email Address', {exact:false});
     const requestButton = screen.getByRole('button', { name: 'Request Email' });
 
-    // Fill in the input fields for password reset
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
 
-    // Submit the form for password reset
     fireEvent.click(requestButton);
 
-    // Wait for the asynchronous operation to complete
     await act(async () => {
-      await fetchMockPromise;
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    // Assert that the form is submitted correctly
     expect(emailInput).toHaveValue('test@example.com');
     
     expect(screen.getByText('An email will be sent to you including a reset token enter it below to reset your password')).toBeInTheDocument();

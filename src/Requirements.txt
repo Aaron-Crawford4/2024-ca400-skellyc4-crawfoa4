@@ -1,0 +1,6 @@
+nodejs
+django
+djangorestframework
+django-cors-headers
+pyjwt
+requests
