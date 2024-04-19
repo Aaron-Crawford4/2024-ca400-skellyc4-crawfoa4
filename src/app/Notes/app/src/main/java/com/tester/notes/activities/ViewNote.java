@@ -17,10 +17,13 @@ import com.tester.notes.entities.Note;
 import com.tester.notes.entities.Repository;
 import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.retrofit.RetrofitClient;
+import com.tester.notes.utils.markdownBuilder;
+
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.noties.markwon.Markwon;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,9 +53,10 @@ public class ViewNote extends AppCompatActivity {
 
         byte[] decodedBytes = Base64.getDecoder().decode(note.getContent());
         decodedText = new String(decodedBytes);
-        textNoteContent.setText(decodedText);
+        Markwon markwon = markdownBuilder.getMarkwon(getApplicationContext());
+        markwon.setMarkdown(textNoteContent, decodedText);
 
-        textDateTime.setText(note.getDateCreated() + " " + note.getTimeCreated());
+        textDateTime.setText(note.getDateCreated() + " at " + note.getTimeCreated());
 
         ImageView imageBack = findViewById(R.id.imageBack);
         imageBack.setOnClickListener(view -> {

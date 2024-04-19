@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -139,13 +140,16 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
         imageCollaborators.setOnClickListener(view -> createUserDialog());
 
         MaterialSwitch switchShowDeleted = findViewById(R.id.switchShowDeleted);
+        TextView textMyNotes = findViewById(R.id.textMyNotes);
         switchShowDeleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked){
                 if (deletedNoteList == null) getDeletedNotes();
+                textMyNotes.setText(R.string.deleted_files);
                 notesRecyclerView.setVisibility(View.GONE);
                 deletedNotesRecyclerView.setVisibility(View.VISIBLE);
 
             } else{
+                textMyNotes.setText(R.string.notes);
                 notesRecyclerView.setVisibility(View.VISIBLE);
                 deletedNotesRecyclerView.setVisibility(View.GONE);
             }

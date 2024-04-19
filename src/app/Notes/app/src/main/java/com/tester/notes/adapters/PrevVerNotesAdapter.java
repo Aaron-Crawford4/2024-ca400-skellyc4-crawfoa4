@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PrevVerNotesAdapter extends RecyclerView.Adapter<PrevVerNotesAdapter.NoteViewHolder>{
 
-    private List<Note> notes;
+    private final List<Note> notes;
     private final NotesListener notesListener;
 
     public PrevVerNotesAdapter(List<Note> notes, NotesListener notesListener) {
@@ -66,7 +66,7 @@ public class PrevVerNotesAdapter extends RecyclerView.Adapter<PrevVerNotesAdapte
         @SuppressLint("SetTextI18n")
         void setNote(Note note){
             textTitle.setText(note.getName());
-            textDateTime.setText(note.getDateCreated() + " " + note.getTimeCreated());
+            textDateTime.setText(note.getDateCreated() + " at " + note.getTimeCreated());
         }
     }
 }

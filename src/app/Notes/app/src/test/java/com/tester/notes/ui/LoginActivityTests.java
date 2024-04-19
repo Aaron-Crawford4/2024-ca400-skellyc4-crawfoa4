@@ -82,7 +82,7 @@ public class LoginActivityTests {
         Button button = activity.findViewById(R.id.buttonSubmit);
         assertTrue(button.isClickable());
 
-        String buttonExpectedText = activity.getString(R.string.submit);
+        String buttonExpectedText = activity.getString(R.string.log_in);
         assertEquals(buttonExpectedText, button.getText().toString());
 
         assertEquals(View.VISIBLE, button.getVisibility());

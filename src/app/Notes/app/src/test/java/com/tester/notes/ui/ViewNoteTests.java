@@ -51,7 +51,7 @@ public class ViewNoteTests {
     @Test
     public void textDateTimeTests(){
         TextView textDateTime = activity.findViewById(R.id.textDateTime);
-        assertThat(textDateTime.getText().toString(), equalTo(testDate + " " + testTime));
+        assertThat(textDateTime.getText().toString(), equalTo(testDate + " at " + testTime));
     }
     @Test
     public void imageBackTests(){

@@ -76,9 +76,12 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     // MarkdownView
-    implementation 'com.github.mukeshsolanki:MarkdownView-Android:2.0.0'
-
     implementation "io.noties.markwon:core:$markwon_version"
     implementation "io.noties.markwon:editor:$markwon_version"
     implementation "io.noties.markwon:image:$markwon_version"
+    implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
+    implementation "io.noties.markwon:ext-tables:$markwon_version"
+    implementation "io.noties.markwon:ext-tasklist:$markwon_version"
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.28'
+    implementation 'com.caverock:androidsvg-aar:1.4'
 }

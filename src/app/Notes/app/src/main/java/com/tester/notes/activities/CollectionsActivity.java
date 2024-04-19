@@ -2,6 +2,7 @@ package com.tester.notes.activities;
 
 import static com.tester.notes.utils.Constants.API_BASE_URL;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -108,6 +109,13 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
             }
         });
         setupDrawer();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Do nothing. Users should use Logout to return to login page.
+            }
+        });
     }
     private void logout() {
         class LogoutTask implements Runnable{
@@ -156,7 +164,9 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
             return true;
         }else if (itemId == R.id.nav_Logout) {
             logout();
-            finish();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
             return true;
         }else return false;
     }
