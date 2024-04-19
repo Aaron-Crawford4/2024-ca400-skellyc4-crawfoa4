@@ -10,6 +10,7 @@ variables:
   ANDROID_SDK_TOOLS: "9477386"
 
 before_script:
+  - cd src/app/Notes/
   - apt-get --quiet update --yes
   - apt-get --quiet install --yes wget unzip
   - export ANDROID_HOME="${PWD}/android-sdk-root"
@@ -35,7 +36,7 @@ lintDebug:
     - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
   artifacts:
     paths:
-      - app/lint/reports/lint-results-debug.html
+      - src/app/Notes/app/lint/reports/lint-results-debug.html
     expose_as: "lint-report"
     when: always
 
@@ -46,7 +47,7 @@ assembleDebug:
     - ./gradlew assembleDebug
   artifacts:
     paths:
-      - app/build/outputs/
+      - src/app/Notes/app/build/outputs/
 
 debugTests:
   needs: [lintDebug, assembleDebug]
