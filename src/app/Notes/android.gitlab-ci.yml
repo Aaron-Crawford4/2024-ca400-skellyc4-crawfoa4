@@ -1,8 +1,8 @@
 image: eclipse-temurin:17-jdk-jammy
 
 stages:
-  - test
   - build
+  - test
 
 variables:
   ANDROID_COMPILE_SDK: "33"
