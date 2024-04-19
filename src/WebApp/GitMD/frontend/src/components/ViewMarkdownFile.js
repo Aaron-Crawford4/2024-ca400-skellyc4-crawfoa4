@@ -473,7 +473,7 @@ export default class ViewMarkdownFile extends Component {
                                     <Typography style={{ marginLeft: '8px', marginRight: '8px' }}>Files</Typography>
                                     <Switch size="lg" color={this.state.showDeletedFiles ? 'primary' : 'primary'} onClick={this.ShowDeletedFiles}  checked={this.state.showDeletedFiles === 1} inputProps={{ 'aria-label': 'controlled' }}/>
                                     <Typography style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}>Deleted Files</Typography>
-                                    <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/Create/" + this.state.selectedRepo.name) }} style={{ marginLeft: '28px' }}>
+                                    <Button variant="contained" color="primary" onClick={() => { this.props.history.push("/create/" + this.state.selectedRepo.name) }} style={{ marginLeft: '28px' }}>
                                         New File
                                     <AddBoxIcon style={{ marginLeft: '8px' }}></AddBoxIcon>
                                     </Button>
