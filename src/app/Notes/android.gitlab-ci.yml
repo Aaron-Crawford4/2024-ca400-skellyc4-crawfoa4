@@ -1,3 +1,6 @@
+stages:
+  - build
+  - test
 image: eclipse-temurin:17-jdk-jammy
 
 variables:
