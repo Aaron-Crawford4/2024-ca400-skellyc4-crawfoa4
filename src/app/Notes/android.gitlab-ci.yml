@@ -1,11 +1,10 @@
-stages:
-  - build
-  - test
-
 image: eclipse-temurin:17-jdk-jammy
 
-variables:
+stages:
+  - test
+  - build
 
+variables:
   ANDROID_COMPILE_SDK: "33"
   ANDROID_BUILD_TOOLS: "33.0.2"
   ANDROID_SDK_TOOLS: "9477386"
