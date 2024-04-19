@@ -4,14 +4,17 @@ stages:
 
 trigger_android:
   trigger:
+    strategy: depend
     include:
       - local: src/app/Notes/android.gitlab-ci.yml
 trigger_react:
   trigger:
+    strategy: depend
     include:
       - local: src/WebApp/GitMD/frontend/.gitlab-ci.yml
 trigger_django:
   trigger:
+    strategy: depend
     include:
       - local:  src/WebApp/GitMD/.gitlab-ci.yml
 
