@@ -2,9 +2,16 @@ stages:
   - build
   - test
 
-trigger_job:
+trigger_android:
   trigger:
     include:
       - local: src/app/Notes/android.gitlab-ci.yml
+trigger_react:
+  trigger:
+    include:
       - local: src/WebApp/GitMD/frontend/.gitlab-ci.yml
-      - local: src/WebApp/GitMD/.gitlab-ci.yml
+trigger_django:
+  trigger:
+    include:
+      - local:  src/WebApp/GitMD/.gitlab-ci.yml
+
