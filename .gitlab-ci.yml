@@ -6,3 +6,5 @@ trigger_job:
   trigger:
     include:
       - local: src/app/Notes/android.gitlab-ci.yml
+      - local: src/WebApp/GitMD/frontend/.gitlab-ci.yml
+      - local: src/WebApp/GitMD/.gitlab-ci.yml
