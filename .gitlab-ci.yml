@@ -2,116 +2,19 @@ stages:
   - build
   - test
 
-variables:
-  DJANGO_SETTINGS_MODULE: "GitMD.settings"
-  ANDROID_COMPILE_SDK: "33"
-  ANDROID_BUILD_TOOLS: "33.0.2"
-  ANDROID_SDK_TOOLS: "9477386"
+trigger_android:
+  trigger:
+    strategy: depend
+    include:
+      - local: src/app/Notes/android.gitlab-ci.yml
+trigger_react:
+  trigger:
+    strategy: depend
+    include:
+      - local: src/WebApp/GitMD/frontend/.gitlab-ci.yml
+trigger_django:
+  trigger:
+    strategy: depend
+    include:
+      - local:  src/WebApp/GitMD/.gitlab-ci.yml
 
-lintDebug:
-  image: eclipse-temurin:17-jdk-jammy
-  interruptible: true
-  stage: build
-  before_script:
-  - cd src/app/Notes/
-  - apt-get --quiet update --yes
-  - apt-get --quiet install --yes wget unzip
-  - export ANDROID_HOME="${PWD}/android-sdk-root"
-  - install -d $ANDROID_HOME
-  - wget --no-verbose --output-document=$ANDROID_HOME/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
-  - unzip -q -d "$ANDROID_HOME/cmdline-tools" "$ANDROID_HOME/cmdline-tools.zip"
-  - mv -T "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/tools"
-  - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/cmdline-tools/tools/bin
-
-  - sdkmanager --version
-
-  - yes | sdkmanager --licenses > /dev/null || true
-  - sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}"
-  - sdkmanager "platform-tools"
-  - sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}"
-
-  - chmod +x ./gradlew
-  script:
-    - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
-  artifacts:
-    paths:
-      - src/app/Notes/app/lint/reports/lint-results-debug.html
-    expose_as: "lint-report"
-    when: always
-
-assembleDebug:
-  image: eclipse-temurin:17-jdk-jammy
-  interruptible: true
-  stage: build
-  before_script:
-  - cd src/app/Notes/
-  - apt-get --quiet update --yes
-  - apt-get --quiet install --yes wget unzip
-  - export ANDROID_HOME="${PWD}/android-sdk-root"
-  - install -d $ANDROID_HOME
-  - wget --no-verbose --output-document=$ANDROID_HOME/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
-  - unzip -q -d "$ANDROID_HOME/cmdline-tools" "$ANDROID_HOME/cmdline-tools.zip"
-  - mv -T "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/tools"
-  - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/cmdline-tools/tools/bin
-
-  - sdkmanager --version
-
-  - yes | sdkmanager --licenses > /dev/null || true
-  - sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}"
-  - sdkmanager "platform-tools"
-  - sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}"
-
-  - chmod +x ./gradlew
-  script:
-    - ./gradlew assembleDebug
-  artifacts:
-    paths:
-      - src/app/Notes/app/build/outputs/
-
-debugTests:
-  image: eclipse-temurin:17-jdk-jammy
-  needs: [lintDebug, assembleDebug]
-  interruptible: true
-  stage: test
-  before_script:
-  - cd src/app/Notes/
-  - apt-get --quiet update --yes
-  - apt-get --quiet install --yes wget unzip
-  - export ANDROID_HOME="${PWD}/android-sdk-root"
-  - install -d $ANDROID_HOME
-  - wget --no-verbose --output-document=$ANDROID_HOME/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
-  - unzip -q -d "$ANDROID_HOME/cmdline-tools" "$ANDROID_HOME/cmdline-tools.zip"
-  - mv -T "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/tools"
-  - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/cmdline-tools/tools/bin
-
-  - sdkmanager --version
-
-  - yes | sdkmanager --licenses > /dev/null || true
-  - sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}"
-  - sdkmanager "platform-tools"
-  - sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}"
-
-  - chmod +x ./gradlew
-  script:
-    - ./gradlew -Pci --console=plain :app:testDebug
-
-
-django_test:
-  stage: test
-  image: python:latest
-  before_script:
-    - pip install django djangorestframework django-cors-headers pyjwt requests
-  script:
-    - cd src/WebApp/GitMD
-    - python manage.py makemigrations -v 3
-    - python manage.py migrate -v 3
-    - python manage.py test
-
-react_test:
-  stage: test
-  image: node:latest
-  script:
-    - cd src/WebApp/GitMD/frontend
-    - npm install
-    - npm install remark-gfm
-    - npm test
