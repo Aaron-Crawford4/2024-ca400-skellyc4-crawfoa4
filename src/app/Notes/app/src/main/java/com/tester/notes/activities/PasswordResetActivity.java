@@ -69,7 +69,7 @@ public class PasswordResetActivity extends AppCompatActivity {
                                                 if (user != null) {
                                                     Auth.setAuthToken(user.getJwt());
                                                     Intent intent = new Intent(getApplicationContext(), CollectionsActivity.class);
-                                                    intent.putExtra("user", user);
+                                                    intent.putExtra("username", user.getName());
                                                     startActivity(intent);
                                                 }
                                             });

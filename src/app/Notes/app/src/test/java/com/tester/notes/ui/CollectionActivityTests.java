@@ -41,10 +41,13 @@ import org.robolectric.shadows.ShadowLooper;
 
 public class CollectionActivityTests {
     private CollectionsActivity activity;
+    String testUsername = "TestUser";
 
     @Before
     public void setUp() {
-        try (ActivityController<CollectionsActivity> controller = Robolectric.buildActivity(CollectionsActivity.class)) {
+        Intent intent = new Intent();
+        intent.putExtra("username", testUsername);
+        try (ActivityController<CollectionsActivity> controller = Robolectric.buildActivity(CollectionsActivity.class, intent)) {
             controller.setup();
             activity = controller.get();
         }
@@ -103,15 +106,19 @@ public class CollectionActivityTests {
         assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START));
 
         // The nav menu displays the correct items
-        assertEquals(R.id.nav_Home, navMenu.getMenu().getItem(0).getItemId());
-        assertEquals(R.id.nav_Owned, navMenu.getMenu().getItem(1).getItemId());
-        assertEquals(R.id.nav_Shared, navMenu.getMenu().getItem(2).getItemId());
-        assertEquals(R.id.nav_Logout, navMenu.getMenu().getItem(3).getItemId());
+        assertEquals(R.id.nav_Welcome, navMenu.getMenu().getItem(0).getItemId());
+        assertEquals(R.id.nav_Home, navMenu.getMenu().getItem(1).getItemId());
+        assertEquals(R.id.nav_Owned, navMenu.getMenu().getItem(2).getItemId());
+        assertEquals(R.id.nav_Shared, navMenu.getMenu().getItem(3).getItemId());
+        assertEquals(R.id.nav_Logout, navMenu.getMenu().getItem(4).getItemId());
 
-        MenuItem nav_Home = navMenu.getMenu().getItem(0);
-        MenuItem nav_Owned = navMenu.getMenu().getItem(1);
-        MenuItem nav_Shared = navMenu.getMenu().getItem(2);
-        MenuItem nav_Logout = navMenu.getMenu().getItem(3);
+        MenuItem nav_Home = navMenu.getMenu().getItem(1);
+        MenuItem nav_Owned = navMenu.getMenu().getItem(2);
+        MenuItem nav_Shared = navMenu.getMenu().getItem(3);
+        MenuItem nav_Logout = navMenu.getMenu().getItem(4);
+
+        // Welcome displays the logged in users username
+        assertEquals(activity.getString(R.string.welcome) + " " + testUsername, navMenu.getMenu().getItem(0).getTitle());
 
         // Only home is checked by default, because we show all collections
         assertTrue(nav_Home.isChecked());
