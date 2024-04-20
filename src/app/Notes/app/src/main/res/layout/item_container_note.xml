@@ -33,7 +33,7 @@
         android:layout_marginEnd="@dimen/_8sdp"
         android:layout_marginBottom="@dimen/_8sdp"
         android:includeFontPadding="false"
-        android:textColor="@color/colorIcons"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="@dimen/_7ssp"
         app:layout_constraintStart_toEndOf="@+id/textTitle"
         app:layout_constraintTop_toTopOf="parent"
@@ -50,6 +50,7 @@
         app:layout_constraintStart_toEndOf="@+id/textDateTime"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:visibility="gone"
         />
     <ImageView
@@ -63,6 +64,7 @@
         app:layout_constraintStart_toEndOf="@+id/textDateTime"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:visibility="gone"
         />
 

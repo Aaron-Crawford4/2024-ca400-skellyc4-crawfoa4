@@ -221,8 +221,7 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                             allRepos.addAll(response.body().get(0));
                             ownedRepos.addAll(response.body().get(1));
                             sharedRepos.addAll(response.body().get(2));
-                            repoList.addAll(allRepos);
-                            runOnUiThread(()-> repoAdapter.notifyDataSetChanged());
+                            updateNavigation(menuState);
                         }
                     }
 
@@ -261,6 +260,9 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                             if (response.isSuccessful()) {
                                 Toast.makeText(CollectionsActivity.this, "Created new collection!", Toast.LENGTH_SHORT).show();
                                 runOnUiThread(() -> createRepoDialog.dismiss());
+                                allRepos.clear();
+                                ownedRepos.clear();
+                                sharedRepos.clear();
                                 repoList.clear();
                                 getRepos();
                             }else Toast.makeText(CollectionsActivity.this, "Failed to create new collection!", Toast.LENGTH_SHORT).show();
