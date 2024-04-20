@@ -63,7 +63,7 @@ class MarkdownFileView(APIView):
             response = requests.get(url, json=data, headers=headers)
 
             if(response.status_code != 200):
-                name = GiteaAPIUtils.make_owner_search_request(repoName, token)
+                name, token = GiteaAPIUtils.make_owner_search_request(repoName, token)
                 url = f"{BASE_URL}/repos/" + name + "/" + repoName + "/contents"
                 headers = {
                     'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ class MarkdownFileView(APIView):
             return Response(fileAndDates)
         
         elif(switch == "deletedFiles"):
-            name = GiteaAPIUtils.make_owner_search_request(repoName, token)
+            name, token = GiteaAPIUtils.make_owner_search_request(repoName, token)
             url = f"{BASE_URL}/repos/{name}/{repoName}/commits"
             headers = {
                 'Content-Type': 'application/json',
@@ -111,7 +111,6 @@ class MarkdownFileView(APIView):
                         removed_files_with_date.append(result)
                         removed_files.add(result[0])
 
-            print(removed_files_with_date)
             return Response(removed_files_with_date)
         
     def get_files(self, data, name, repoName, token):
@@ -124,7 +123,6 @@ class MarkdownFileView(APIView):
         return [data["name"], response2.json()[-1]["created"]]
     
     def get_deleted_files(self, data, removed_files):
-        print(data)
         date = data["created"]
         for file_data in data["files"]:
             if file_data["status"] == "removed" and file_data["filename"] not in removed_files:
@@ -173,7 +171,6 @@ class MarkdownFileCreate(APIView):
             }
             response = requests.post(url, json=data, headers=headers)
             if response.status_code == 201:
-                print(response.json())
                 return Response(response.json(), status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': 'Failed to create user file'}, status=response.status_code)
@@ -218,7 +215,7 @@ class RestoreDeletedFile(APIView):
         token = user.token
         repo = request.data.get('repoName')
         file = request.data.get('file')
-        owner = GiteaAPIUtils.make_owner_search_request(repo, token)
+        owner, token = GiteaAPIUtils.make_owner_search_request(repo, token)
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/commits"
         headers = {
             'Content-Type': 'application/json',
@@ -318,7 +315,6 @@ class GetPreviousVersions(APIView):
                 return Response({'error': 'Failed to get previous commits content'}, status=response.status_code)
             commit[0] = response.json()["content"]
 
-        print(Commitlist)
         return Response(Commitlist, status=status.HTTP_200_OK)
 
 
@@ -332,7 +328,7 @@ class MarkdownFileDelete(APIView):
         token = user.token
         file = request.data.get('file')
         repo = request.data.get('repo')
-        user = GiteaAPIUtils.make_owner_search_request(repo, token)
+        user, token = GiteaAPIUtils.make_owner_search_request(repo, token)
 
         url = f"{BASE_URL}/repos/" + user + "/" + repo + "/contents/" + file
         headers = {
@@ -404,13 +400,10 @@ class AddUserToRepo(APIView):
         payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
-        owner = user.name
         repo = request.data.get('repo')
         addedUser = request.data.get('addedUser')
-        repoFullName = request.data.get('repoFullName')
         
-        if(addedUser == GiteaAPIUtils.make_owner_search_request(repoFullName, token)):
-            return Response({'error': 'Collaborator is already owner'})
+        owner, token = GiteaAPIUtils.make_owner_search_request(repo, token)
 
         url = f"{BASE_URL}/repos/" + owner + "/" + repo + "/collaborators/" + addedUser
         headers = {
@@ -435,7 +428,7 @@ class GetCollaborators(APIView):
         token = user.token
         repoName = request.data.get('repoName')
         repoFullName = request.data.get('repoFullName')
-        owner = GiteaAPIUtils.make_owner_search_request(repoFullName, token)
+        owner, token = GiteaAPIUtils.make_owner_search_request(repoName, token)
         url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/collaborators"
         headers = {
             'Content-Type': 'application/json',
@@ -459,7 +452,7 @@ class RemoveCollaborator(APIView):
         repoName = request.data.get('repoName')
         repoFullName = request.data.get('repoFullName')
         collaborator = request.data.get('collaborator')
-        owner = GiteaAPIUtils.make_owner_search_request(repoFullName, token)
+        owner, token = GiteaAPIUtils.make_owner_search_request(repoName, token)
         url = f"{BASE_URL}/repos/" + owner + "/" + repoName + "/collaborators/" + collaborator
         headers = {
             'Content-Type': 'application/json',
@@ -656,14 +649,30 @@ class PasswordReset(APIView):
 class GiteaAPIUtils:
     @staticmethod
     def make_owner_search_request(repoName, token):
+
+        url = f"{BASE_URL}/user/repos"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+        response = requests.get(url, headers=headers)
+        id = [item['id'] for item in response.json() if item['name'] == repoName]
+        print("-------------------")
+        print(id)
+        print("-------------------")
+
         url = f"{BASE_URL}/repos/search?q=" + repoName
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
         }
         response = requests.get(url, headers=headers)
-
         if response.status_code == 200:
-            return response.json()["data"][0]["owner"]["login"]
+            for item in response.json()['data']:
+                if item['id'] == id[0]:
+                    owner = item["owner"]["login"]
+            user = User.objects.filter(name=owner).first()
+            token = user.token
+            return owner, token
         else:
             return Response({'error': 'Owner of repo not found'}, status=response.status_code)

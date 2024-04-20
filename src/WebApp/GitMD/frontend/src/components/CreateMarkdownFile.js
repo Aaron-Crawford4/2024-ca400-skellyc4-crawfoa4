@@ -106,7 +106,7 @@ export default class CreateMarkdownFile extends Component {
           </div>
           {this.state.repoNameFromParams === undefined && (
           <TextField
-            label="Repository Title"
+            label="Collection Title"
             variant="outlined"
             fullWidth
             margin="normal"

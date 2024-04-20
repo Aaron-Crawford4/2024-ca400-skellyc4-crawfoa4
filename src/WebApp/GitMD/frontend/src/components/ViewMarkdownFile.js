@@ -590,7 +590,7 @@ export default class ViewMarkdownFile extends Component {
                             <div style={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: '10px', padding: '10px', borderRadius: '8px', width: '100%', border: '1px solid #ccc'  }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                                    <TextField label="Add User To Repository" variant="outlined" rows={1} margin="normal" value={this.state.Collaborator} onChange={this.handleCollaboratorChange} style={{ marginRight: '8px' }} />
+                                    <TextField label="Add User To Collection" variant="outlined" rows={1} margin="normal" value={this.state.Collaborator} onChange={this.handleCollaboratorChange} style={{ marginRight: '8px' }} />
                                     <div className="addUser-button">
                                         <Button variant="contained" color="primary" onClick={() => this.addCollaborator(this.state.repositoryName, this.state.repoUrl)}>
                                         Add User
