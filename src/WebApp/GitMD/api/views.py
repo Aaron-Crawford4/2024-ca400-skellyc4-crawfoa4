@@ -657,9 +657,6 @@ class GiteaAPIUtils:
         }
         response = requests.get(url, headers=headers)
         id = [item['id'] for item in response.json() if item['name'] == repoName]
-        print("-------------------")
-        print(id)
-        print("-------------------")
 
         url = f"{BASE_URL}/repos/search?q=" + repoName
         headers = {
