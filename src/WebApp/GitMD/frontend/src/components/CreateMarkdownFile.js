@@ -117,7 +117,7 @@ export default class CreateMarkdownFile extends Component {
           />
         )}
           <TextField
-            label="First File Title"
+            label="File Title"
             variant="outlined"
             fullWidth
             margin="normal"
