@@ -1,0 +1,100 @@
+<resources>
+    <string name="app_name">GitMD</string>
+    <string name="notes">Files</string>
+    <string name="search_notes">Search Files</string>
+    <string name="note_title">File Title</string>
+    <string name="type_note_here">Type File Content Here…</string>
+    <string name="delete_note_confirmation_message">Are you sure you want to delete this file?</string>
+    <string name="delete_note">delete file</string>
+    <string name="deleted_files">Deleted Files</string>
+    <string name="cancel">Cancel</string>
+    <string name="login">Sign in</string>
+    <string name="log_in">LOG IN</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="submit">Submit</string>
+    <string name="register">Register</string>
+    <string name="email_address">Email Address</string>
+    <string name="collections">Collections</string>
+    <string name="search_collections">Search Collections</string>
+    <string name="new_collection">New Collection</string>
+    <string name="collection_name">Collection Name</string>
+    <string name="create_collection">Create Collection</string>
+    <string name="users_with_access">Users with Access</string>
+    <string name="close">close</string>
+    <string name="file_history">File History</string>
+    <string name="previous_content">Previous Content</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="get_reset_token">Get Reset Token</string>
+    <string name="new_password">New Password</string>
+    <string name="reset_token">Reset Token</string>
+    <string name="set_new_password">Set New Password</string>
+    <string name="forgot_password"><u>Forgot Password?</u></string>
+    <string name="markdown_help">Markdown Help</string>
+    <string name="home">Home</string>
+    <string name="my_collections">My Collections</string>
+    <string name="shared_with_me">Shared With Me</string>
+    <string name="sign_out">Sign Out</string>
+
+
+    <string name="markdown_help_content"># GitMD \n
+Below is examples of what you can do in markdown. \n
+You can edit this file as you wish to get a better understanding of the capabilities\n
+of markdown\n\n
+# Heading 1\n
+Different Headings can be achieved by using the hash symbol before a sentence
+and these can be scaled from 1 hash symbol to 6 to change the size\n
+###### Heading 6\n\n
+Text can be written normally like so in bold **like so** or italic *like so*\n
+you can also combine **bold *italic* text**\n
+We can strike through words like so ~~The world is flat.~~\n
+or put a divider through a page like so.\n
+___\n\n
+## Lists\n
+Lists in markdown can be numbered:\n
+1. item\n
+2. next item\n
+    \t1. nested item\n
+3. following item\n\n
+Or bullet points:\n
+- First item\n
+- Second item\n
+- Third item\n
+    \t- Indented item\n
+    \t- Indented item\n
+- Fourth item\n\n
+Unordered list can use\n
+*  asterisks\n
+- Or minuses\n
++ Or pluses\n\n
+We can also make task lists like so:\n
+- [x] Write the press release\n
+- [ ] Update the website\n
+- [ ] Contact the media\n\n
+## Tables\n
+Tables can be made as seen below\n\n
+| Kilometres| Miles |\n
+| - | - |\n
+| 5| 9|\n
+| 17| 23|\n\n
+## Links\n
+- Links can be written like so https://Google.com\n
+- or you can hide the link behind a word like so\n
+My favourite search engine is [Google](https://Google.com).\n
+- Email addresses can also be links fake@example.com\n
+- We can also store all our links elsewhere by doing the following\n
+My favourite search engine is [Google][1].\n\n
+[1]: https://Google.com\n\n
+### Code\n
+we can write code functions like so to differentiate it from normal text\n
+`function example(){const x = 10;}`\n\n
+### Images\n
+Images and gifs can be placed inside markdown files like so\n\n
+#### Inline-style:\n
+![alt text](https://content.codecademy.com/courses/learn-cpp/community-challenge/highfive.gif \"Gif Title\")\n\n
+#### Reference-style:\n
+Or you Can Reference an image to have less content on your page like so\n
+![Image of a Cat][logo]\n\n
+[logo]: https://www.online-image-editor.com//styles/2014/images/example_image.png \"Cat\"</string>
+    <string name="welcome">Welcome</string>
+</resources>

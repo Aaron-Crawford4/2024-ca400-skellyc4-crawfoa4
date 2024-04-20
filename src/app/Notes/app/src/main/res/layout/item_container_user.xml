@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutUser"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/_8sdp"
+    android:layout_marginBottom="@dimen/_2sdp"
+    android:layout_marginEnd="@dimen/_8sdp"
+    android:paddingStart="@dimen/_10sdp"
+    android:paddingEnd="@dimen/_10sdp"
+    android:paddingVertical="@dimen/_1sdp"
+    tools:ignore="UseCompoundDrawables">
+
+<TextView
+    android:id="@+id/textName"
+    android:layout_width="@dimen/_210sdp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/_8sdp"
+    android:layout_marginEnd="@dimen/_8sdp"
+    android:includeFontPadding="false"
+    android:textColor="@color/colorPrimaryDark"
+    android:textSize="@dimen/_13ssp"
+    />
+    <ImageView
+        android:id="@+id/imageRemoveUser"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_20sdp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_remove_user"
+        android:layout_marginVertical="@dimen/_1sdp"
+        app:tint="@color/colorDelete"
+        />
+
+
+</LinearLayout>
