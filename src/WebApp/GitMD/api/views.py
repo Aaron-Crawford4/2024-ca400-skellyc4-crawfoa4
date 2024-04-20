@@ -368,10 +368,10 @@ class RepoDelete(APIView):
         }
 
         response = requests.delete(url, headers=headers)
-        if response.status_code != 200: 
+        if response.status_code != 204: 
             return Response({'error': 'Failed to delete user repo'}, status=response.status_code)
 
-        return Response(response.json(), status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class MarkdownFileDetails(APIView):
 
