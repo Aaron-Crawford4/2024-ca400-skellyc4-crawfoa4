@@ -373,15 +373,15 @@ export default class ViewMarkdownFile extends Component {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '2px' }}>
                         <>
                         {this.state.sortBy != "alphabeticallyReverse" && (
-                            <Button onClick={() => this.handleSort("alphabeticallyReverse")}>
-                                Name
-                                <ArrowDropDownIcon />
-                            </Button>
+                            <Button onClick={() => this.handleSort("alphabeticallyReverse")} style={{ width: '200px' }}>
+                            Name
+                            <ArrowDropDownIcon />
+                          </Button>
                         )}
                         </>
                         <>
                         {this.state.sortBy == "alphabeticallyReverse" && (
-                            <Button onClick={() => this.handleSort("alphabetically")}>
+                            <Button onClick={() => this.handleSort("alphabetically")} style={{ width: '200px' }}>
                                 Name
                                 <ArrowDropUpIcon />
                             </Button>
@@ -402,16 +402,16 @@ export default class ViewMarkdownFile extends Component {
                         />
                         <>
                         {this.state.sortBy != "dateOldestFirst" && (
-                            <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateOldestFirst")}>
-                                <div style={{ marginRight: '0px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
+                            <Button style={{ width: '240px' }} onClick={() => this.handleSort("dateOldestFirst")}>
+                                <div style={{whiteSpace: 'nowrap' }}>Created On</div>
                                 <ArrowDropDownIcon />
                             </Button>
                         )}
                         </>
                         <>
                         {this.state.sortBy == "dateOldestFirst" && (
-                            <Button style={{ marginRight: '47px' }} onClick={() => this.handleSort("dateNewestFirst")}>
-                                <div style={{ marginRight: '0px', width: '100px', whiteSpace: 'nowrap' }}>Created On</div>
+                            <Button style={{ width: '240px' }} onClick={() => this.handleSort("dateNewestFirst")}>
+                                <div style={{ whiteSpace: 'nowrap' }}>Created On</div>
                                 <ArrowDropUpIcon />
                             </Button>
                         )}
@@ -420,8 +420,6 @@ export default class ViewMarkdownFile extends Component {
                         <Divider />
                         {repoArray.map((repo, index) => {
                             if (repo.name.includes(this.state.searchTerm)) {
-                                const marginRightValue = `calc(52% - ${repo.owner.login.length * 8}px)`;
-                                console.log(marginRightValue)
                                 return (
                                     <Grid item xs={12} key={index}>
                                         <div className="repo-container" onClick={() => this.handleRepoButtonClick(repo)}>
@@ -429,11 +427,11 @@ export default class ViewMarkdownFile extends Component {
                                                 <ListItemIcon>
                                                     <FolderIcon />
                                                 </ListItemIcon>
-                                                <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                                                    <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between'  }}>
+                                                    <div style={{ width: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                         {repo.name}
                                                     </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: marginRightValue  }}>
+                                                    <div style={{ display: 'flex', width: '200px', marginRight: "150px" }}>
                                                         <Avatar sx={{ bgcolor: deepPurple[500], width: 24, height: 24, marginRight: '8px' }}></Avatar> {repo.owner.login}
                                                     </div>
                                                     <div style={{ width: '100px', whiteSpace: 'nowrap' }}>{`${repo.created_at.substring(8, 10)}-${repo.created_at.substring(5, 7)}-${repo.created_at.substring(0, 4)}`}</div>
