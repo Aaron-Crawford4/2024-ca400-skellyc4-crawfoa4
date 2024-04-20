@@ -6,7 +6,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,6 +40,7 @@ import com.tester.notes.adapters.UserAdapter;
 
 import com.tester.notes.entities.Repository;
 import com.tester.notes.listeners.DeletedNotesListener;
+import com.tester.notes.listeners.NoteDeleteListener;
 import com.tester.notes.rest.NoteApiCalls;
 import com.tester.notes.entities.Note;
 import com.tester.notes.listeners.NotesListener;
@@ -58,7 +59,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 
-public class MainActivity extends AppCompatActivity implements NotesListener, DeletedNotesListener {
+public class MainActivity extends AppCompatActivity implements NotesListener, DeletedNotesListener, NoteDeleteListener {
     private RecyclerView notesRecyclerView, deletedNotesRecyclerView;
     private List<Note> noteList, deletedNoteList;
     private List<String> userList;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
     private static Repository repo;
     private Dialog createUserDialog;
     public DrawerLayout drawerLayout;
+    private String username;
 
     enum RequestType {
         ADD,
@@ -95,7 +97,9 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        repo = (Repository) getIntent().getSerializableExtra("repo");
+        Intent prevIntent = getIntent();
+        repo = (Repository) prevIntent.getSerializableExtra("repo");
+        username = prevIntent.getStringExtra("username");
 
         ImageView imageAddNote = findViewById(R.id.imageAddNote);
         imageAddNote.setOnClickListener(view -> {
@@ -115,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
 
 
         noteList = new ArrayList<>();
-        notesAdapter = new NotesAdapter(noteList, this);
+        notesAdapter = new NotesAdapter(noteList, this, this);
         notesRecyclerView.setAdapter(notesAdapter);
 
         getNotes(RequestType.VIEW);
@@ -156,13 +160,47 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
         });
         setupDrawer();
     }
+    @Override
+    public void onNoteDeleteClicked(Note note, int position) {
+        class DeleteNoteTask implements Runnable {
+            @Override
+            public void run() {
+                Retrofit retrofit = RetrofitClient.getAuthClient(API_BASE_URL);
+                NoteApiCalls client = retrofit.create(NoteApiCalls.class);
+                Call<Void> call = client.deleteNote(note.getName(), repo.getName());
+                call.enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "Deleted note!", Toast.LENGTH_SHORT).show();
+                            if (deletedNoteList != null) {
+                                deletedNoteList.add(note);
+                                deletedNotesAdapter.notifyItemInserted(0);
+                            }
+                            noteList.remove(position);
+                            notesAdapter.notifyItemRemoved(position);
+                        }
+                    }
+                    @Override
+                    public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                        Toast.makeText(MainActivity.this, "Failed to delete note!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            }
+        }
+        executorService.execute(new DeleteNoteTask());
+    }
     private void updateNavigation(int itemId) {
         if (itemId == R.id.nav_Logout) {
             logout();
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
-        }else {
+        } else if (itemId == R.id.nav_help) {
+            Intent intent = new Intent(this, HelpActivity.class);
+            startActivity(intent);
+        } else {
             Intent intent = new Intent();
             intent.putExtra("navigationPressed", true);
             intent.putExtra("menuItemId", itemId);
@@ -198,15 +236,14 @@ public class MainActivity extends AppCompatActivity implements NotesListener, De
         navView.bringToFront();
 
         Menu navMenu = navView.getMenu();
+        navMenu.findItem(R.id.nav_Welcome).setTitle(getString(R.string.welcome) + " " + username);
         navMenu.setGroupCheckable(R.id.groupCollectionFilters, true, true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            navMenu.setGroupDividerEnabled(true);
-        }
+        navMenu.setGroupDividerEnabled(true);
 
         navView.setCheckedItem(getIntent().getIntExtra("menuState", R.id.nav_Home));
 
         navView.setNavigationItemSelectedListener(item -> {
-            item.setChecked(true);
+            if (item.isCheckable()) item.setChecked(true);
             updateNavigation(item.getItemId());
             return true;
         });

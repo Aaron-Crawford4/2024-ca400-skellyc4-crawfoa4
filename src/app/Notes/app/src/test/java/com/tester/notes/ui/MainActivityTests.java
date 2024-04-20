@@ -43,9 +43,12 @@ import org.robolectric.shadows.ShadowLooper;
 @RunWith(RobolectricTestRunner.class)
 public class MainActivityTests {
     MainActivity activity;
+    String testUsername = "TestUser";
     @Before
     public void setUp(){
-        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class)){
+        Intent intent = new Intent();
+        intent.putExtra("username", testUsername);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class, intent)){
             controller.setup();
             activity = controller.get();
         }
@@ -158,15 +161,19 @@ public class MainActivityTests {
         assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START));
 
         // The nav menu displays the correct items
-        assertEquals(R.id.nav_Home, navMenu.getMenu().getItem(0).getItemId());
-        assertEquals(R.id.nav_Owned, navMenu.getMenu().getItem(1).getItemId());
-        assertEquals(R.id.nav_Shared, navMenu.getMenu().getItem(2).getItemId());
-        assertEquals(R.id.nav_Logout, navMenu.getMenu().getItem(3).getItemId());
+        assertEquals(R.id.nav_Welcome, navMenu.getMenu().getItem(0).getItemId());
+        assertEquals(R.id.nav_Home, navMenu.getMenu().getItem(1).getItemId());
+        assertEquals(R.id.nav_Owned, navMenu.getMenu().getItem(2).getItemId());
+        assertEquals(R.id.nav_Shared, navMenu.getMenu().getItem(3).getItemId());
+        assertEquals(R.id.nav_Logout, navMenu.getMenu().getItem(4).getItemId());
 
-        MenuItem nav_Home = navMenu.getMenu().getItem(0);
-        MenuItem nav_Owned = navMenu.getMenu().getItem(1);
-        MenuItem nav_Shared = navMenu.getMenu().getItem(2);
-        MenuItem nav_Logout = navMenu.getMenu().getItem(3);
+        // Welcome displays the logged in users username
+        assertEquals(activity.getString(R.string.welcome) + " " + testUsername, navMenu.getMenu().getItem(0).getTitle());
+
+        MenuItem nav_Home = navMenu.getMenu().getItem(1);
+        MenuItem nav_Owned = navMenu.getMenu().getItem(2);
+        MenuItem nav_Shared = navMenu.getMenu().getItem(3);
+        MenuItem nav_Logout = navMenu.getMenu().getItem(4);
 
         // Only home is checked by default
         assertTrue(nav_Home.isChecked());

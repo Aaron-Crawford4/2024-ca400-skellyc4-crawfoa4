@@ -76,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (user != null && response.isSuccessful()) {
                                 Auth.setAuthToken(user.getJwt());
                                 Intent intent = new Intent(getApplicationContext(), CollectionsActivity.class);
-                                intent.putExtra("user", user);
+                                intent.putExtra("username", user.getName());
                                 loginLauncher.launch(intent);
                             } else  Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
                         });

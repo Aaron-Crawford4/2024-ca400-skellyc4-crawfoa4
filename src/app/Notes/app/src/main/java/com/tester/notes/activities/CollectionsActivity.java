@@ -17,7 +17,6 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -57,6 +56,7 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
     public DrawerLayout drawerLayout;
     private Menu navMenu;
     private int menuState = R.id.nav_Home;
+    private String username;
     private final ActivityResultLauncher<Intent> repoLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -108,6 +108,8 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                 if (repoList.size() != 0) repoAdapter.searchRepos(searchTerm.toString());
             }
         });
+        username = getIntent().getStringExtra("username");
+
         setupDrawer();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -168,6 +170,10 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             return true;
+        }else if (itemId == R.id.nav_help) {
+            Intent intent = new Intent(this, HelpActivity.class);
+            startActivity(intent);
+            return true;
         }else return false;
     }
 
@@ -180,13 +186,12 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
         navView.bringToFront();
 
         navMenu = navView.getMenu();
+        navMenu.findItem(R.id.nav_Welcome).setTitle(getString(R.string.welcome) + " " + username);
         navMenu.setGroupCheckable(R.id.groupCollectionFilters, true, true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            navMenu.setGroupDividerEnabled(true);
-        }
+        navMenu.setGroupDividerEnabled(true);
 
         navView.setNavigationItemSelectedListener(item -> {
-            item.setChecked(true);
+            if (item.isCheckable()) item.setChecked(true);
             menuState = item.getItemId();
             return updateNavigation(item.getItemId());
         });
@@ -194,6 +199,7 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
     @Override
     public void onRepoClicked(Repository repo, int position) {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.putExtra("username", username);
         intent.putExtra("repo", repo);
         intent.putExtra("menuState", menuState);
         repoLauncher.launch(intent);
@@ -215,8 +221,7 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                             allRepos.addAll(response.body().get(0));
                             ownedRepos.addAll(response.body().get(1));
                             sharedRepos.addAll(response.body().get(2));
-                            repoList.addAll(allRepos);
-                            runOnUiThread(()-> repoAdapter.notifyDataSetChanged());
+                            updateNavigation(menuState);
                         }
                     }
 
@@ -255,6 +260,9 @@ public class CollectionsActivity extends AppCompatActivity implements RepoListen
                             if (response.isSuccessful()) {
                                 Toast.makeText(CollectionsActivity.this, "Created new collection!", Toast.LENGTH_SHORT).show();
                                 runOnUiThread(() -> createRepoDialog.dismiss());
+                                allRepos.clear();
+                                ownedRepos.clear();
+                                sharedRepos.clear();
                                 repoList.clear();
                                 getRepos();
                             }else Toast.makeText(CollectionsActivity.this, "Failed to create new collection!", Toast.LENGTH_SHORT).show();

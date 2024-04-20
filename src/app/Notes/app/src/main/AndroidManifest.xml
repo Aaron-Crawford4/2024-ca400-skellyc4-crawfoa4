@@ -18,6 +18,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="33">
         <activity
+            android:name=".activities.HelpActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.PasswordResetActivity"
             android:exported="false" />
         <activity

@@ -12,5 +12,9 @@ public class User implements Serializable {
     public String getJwt() {
         return jwt;
     }
+
+    public String getName() {
+        return name;
+    }
 }
 
