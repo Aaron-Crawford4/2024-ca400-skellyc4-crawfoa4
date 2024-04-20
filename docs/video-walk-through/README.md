@@ -1,6 +1,6 @@
-<!--
-The video walk through is [here](FIX-ME).
--->
+
+The video walk through is [here](https://drive.google.com/file/d/1_UssG9VxVp7kvTrJ210Iq-5nFxNRo3zj/view?usp=drive_link).
+
 
 Instructions:
 
@@ -10,4 +10,4 @@ Instructions:
 4. `git commit -a`, `git push`.
 5. Using incognito mode on your browser, verify that the video is indeed accessible to anybody with the link.
 
-Remember that **your video duration is limited to an maximum of 5 minutes.**   
+Remember that **your video duration is limited to an maximum of 5 minutes.**

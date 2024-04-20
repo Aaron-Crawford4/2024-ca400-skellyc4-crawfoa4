@@ -1,0 +1,14 @@
+stages:
+  - test
+
+variables:
+  DJANGO_SETTINGS_MODULE: "GitMD.settings"
+
+
+react_test:
+  stage: test
+  image: node:latest
+  script:
+    - cd src/WebApp/GitMD/frontend
+    - npm install
+    - npm test

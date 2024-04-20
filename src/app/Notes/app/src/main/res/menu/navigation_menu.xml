@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <item
+            android:id="@+id/nav_Welcome"
+            android:title="@string/welcome"
+            android:checkable="false" />
+    </group>
+    <group
+        android:id="@+id/groupCollectionFilters">
+        <item
+            android:id="@+id/nav_Home"
+            android:title="@string/home"
+            android:icon="@drawable/ic_home"
+            android:iconTint="@color/colorPrimaryDark"
+            android:checked="true"/>
+        <item
+            android:id="@+id/nav_Owned"
+            android:title="@string/my_collections"
+            android:icon="@drawable/ic_collection"
+            android:iconTint="@color/colorPrimaryDark"
+            />
+        <item
+            android:id="@+id/nav_Shared"
+            android:title="@string/shared_with_me"
+            android:icon="@drawable/ic_shared_collection"
+            android:iconTint="@color/colorPrimaryDark"
+            />
+    </group>
+    <item
+        android:id="@+id/nav_Logout"
+        android:title="@string/sign_out"
+        android:icon="@drawable/ic_logout"
+        android:iconTint="@color/colorPrimaryDark"/>
+    <item
+        android:id="@+id/nav_help"
+        android:title="@string/markdown_help"
+        android:icon="@drawable/ic_help"
+        android:iconTint="@color/colorPrimaryDark"
+        android:checkable="false"/>
+</menu>
