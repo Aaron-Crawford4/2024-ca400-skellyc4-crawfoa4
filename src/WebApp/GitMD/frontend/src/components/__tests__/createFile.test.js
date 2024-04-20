@@ -35,7 +35,7 @@ describe('CreateMarkdownFile component', () => {
         expect(screen.queryByText('contentcontent')).not.toBeInTheDocument();
       });
 
-    const collectionInput = screen.getByLabelText('Repository Title', {exact:false});
+    const collectionInput = screen.getByLabelText('Collection Title', {exact:false});
     const titleInput = screen.getByLabelText('File Title', {exact:false});
     const contentInput = screen.getByLabelText('Content', {exact:false});
     const submitButton = screen.getByText('Create');
