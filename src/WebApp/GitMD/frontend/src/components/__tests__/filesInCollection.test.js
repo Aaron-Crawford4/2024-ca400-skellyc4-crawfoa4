@@ -56,8 +56,7 @@ describe('ViewMarkdownFile component', () => {
       expect(screen.getByText('user1')).toBeInTheDocument();
       expect(screen.getByText('(owner)')).toBeInTheDocument();
       expect(screen.getByText('user2')).toBeInTheDocument();
-      //screen.debug(undefined, Infinity)
-      const addUserInput = screen.getByLabelText('Add User To Repository', {exact:false});
+      const addUserInput = screen.getByLabelText('Add User To Collection', {exact:false});
       fireEvent.change(addUserInput, { target: { value: 'user3' } });
       expect(addUserInput).toHaveValue('user3');
 
@@ -71,7 +70,6 @@ describe('ViewMarkdownFile component', () => {
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 0));
       });
-      screen.debug(undefined, Infinity)
     });  
 
   });
