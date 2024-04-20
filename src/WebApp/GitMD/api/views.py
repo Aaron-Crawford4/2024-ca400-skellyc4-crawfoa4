@@ -137,15 +137,18 @@ class MarkdownFileCreate(APIView):
         payload = jwt.decode(jwtToken, 'secret', algorithms=['HS256'])
         user = User.objects.filter(id=payload['id']).first()
         token = user.token
-        username = user.name
-
         repoTitle = request.data.get('repoTitle')
         title = request.data.get('title')
         content = request.data.get('content')
+        try:
+            name, ownertoken = GiteaAPIUtils.make_owner_search_request(repoTitle, token)
+        except:
+            name = user.name
+            ownertoken = ""
         encoded_bytes = base64.b64encode(content.encode('utf-8'))
         content = encoded_bytes.decode('utf-8')
-
-        try:
+        if(ownertoken == ""):
+            print("here")
             url = f"{BASE_URL}/user/repos"
             headers = {
                 'Content-Type': 'application/json',
@@ -156,24 +159,24 @@ class MarkdownFileCreate(APIView):
                 'private': True
             }
             response = requests.post(url, json=data, headers=headers)
+            print(response.json())
             if response.status_code != 201: 
                 return Response({'error': 'Failed to create user repo'}, status=response.status_code)
 
-        finally:
-            filename = title + ".md"
-            url = f"{BASE_URL}/repos/" + username + "/" + repoTitle + "/contents/" + filename
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'token ' + token
-            }
-            data = {
-                'content' : content
-            }
-            response = requests.post(url, json=data, headers=headers)
-            if response.status_code == 201:
-                return Response(response.json(), status=status.HTTP_201_CREATED)
-            else:
-                return Response({'error': 'Failed to create user file'}, status=response.status_code)
+        filename = title + ".md"
+        url = f"{BASE_URL}/repos/" + name + "/" + repoTitle + "/contents/" + filename
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'token ' + token
+        }
+        data = {
+            'content' : content
+        }
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 201:
+            return Response(response.json(), status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Failed to create user file'}, status=response.status_code)
             
         
 class MarkdownFileEdit(APIView):
@@ -368,10 +371,10 @@ class RepoDelete(APIView):
         }
 
         response = requests.delete(url, headers=headers)
-        if response.status_code != 200: 
+        if response.status_code != 204: 
             return Response({'error': 'Failed to delete user repo'}, status=response.status_code)
 
-        return Response(response.json(), status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class MarkdownFileDetails(APIView):
 
@@ -672,4 +675,4 @@ class GiteaAPIUtils:
             token = user.token
             return owner, token
         else:
-            return Response({'error': 'Owner of repo not found'}, status=response.status_code)
+            return "", ""
