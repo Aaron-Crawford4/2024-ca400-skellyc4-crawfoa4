@@ -1,57 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/layoutCollection"
-    android:orientation="horizontal"
-    android:gravity="center"
-    android:layout_width="match_parent"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:id="@+id/layoutCollection"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginHorizontal="@dimen/_12sdp"
+android:layout_marginTop="@dimen/_12sdp"
+android:background="@drawable/background_collection">
+<ImageView
+    android:id="@+id/imageCollection"
+    android:layout_width="@dimen/_20sdp"
+    android:layout_height="@dimen/_20sdp"
+    android:contentDescription="@string/app_name"
+    android:layout_marginStart="@dimen/_8sdp"
+    android:src="@drawable/ic_collection"
+    app:tint="@color/colorIcons"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"/>
+
+<TextView
+    android:id="@+id/textName"
+    android:layout_width="@dimen/_120sdp"
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/_8sdp"
-    android:layout_marginTop="@dimen/_15sdp"
+    android:layout_marginVertical="@dimen/_8sdp"
     android:layout_marginEnd="@dimen/_8sdp"
-    android:background="@drawable/background_collection"
-    android:paddingStart="@dimen/_10sdp"
-    android:paddingEnd="@dimen/_10sdp"
-    android:paddingVertical="@dimen/_1sdp">
+    android:includeFontPadding="false"
+    android:textColor="@color/colorPrimaryDark"
+    android:textSize="@dimen/_13ssp"
+    app:layout_constraintStart_toEndOf="@+id/imageCollection"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    android:text="@string/app_name"
+    />
+<TextView
+    android:id="@+id/textDateTime"
+    android:layout_width="@dimen/_80sdp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/_8sdp"
+    android:layout_marginTop="@dimen/_8sdp"
+    android:layout_marginEnd="@dimen/_8sdp"
+    android:layout_marginBottom="@dimen/_8sdp"
+    android:includeFontPadding="false"
+    android:textColor="@color/colorPrimaryDark"
+    android:textSize="@dimen/_7ssp"
+    app:layout_constraintStart_toEndOf="@+id/textName"
+    app:layout_constraintEnd_toStartOf="@+id/imageDeleteRepo"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    />
+<ImageView
+    android:id="@+id/imageDeleteRepo"
+    android:layout_width="@dimen/_30sdp"
+    android:layout_height="@dimen/_30sdp"
+    android:layout_marginEnd="@dimen/_8sdp"
+    android:contentDescription="@string/app_name"
+    android:src="@drawable/ic_delete"
+    app:tint="@color/colorDelete"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    />
 
-    <ImageView
-        android:layout_width="@dimen/_20sdp"
-        android:layout_height="@dimen/_20sdp"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_collection"
-        app:tint="@color/colorIcons"/>
-    <TextView
-        android:id="@+id/textName"
-        android:layout_width="@dimen/_130sdp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_8sdp"
-        android:layout_marginEnd="@dimen/_8sdp"
-        android:includeFontPadding="false"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="@dimen/_13ssp"
-        />
-    <TextView
-        android:id="@+id/textDateTime"
-        android:layout_width="@dimen/_80sdp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_8sdp"
-        android:layout_marginEnd="@dimen/_8sdp"
-        android:layout_marginBottom="@dimen/_8sdp"
-        android:includeFontPadding="false"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="@dimen/_7ssp"
-        app:layout_constraintStart_toEndOf="@+id/textTitle"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
-    <ImageView
-        android:id="@+id/imageDeleteRepo"
-        android:layout_width="@dimen/_20sdp"
-        android:layout_height="@dimen/_20sdp"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_delete"
-        app:tint="@color/colorDelete"
-        />
-
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
